@@ -39,6 +39,6 @@ class NSWController(PackageController):
 		res_list.append(resource['name'].encode('ascii', 'ignore') if 'name' in resource and resource['name'] != None else '')
 		res_list.append(resource['description'].encode('ascii', 'ignore') if 'description' in resource and resource['description'] != None else '')
 		res_list.append(resource['url'].encode('ascii', 'ignore') if 'url' in resource and resource['url'] != None else '')
-	        csvwriter.writerow(row.items() + res_list)
+	        csvwriter.writerow(row.values() + res_list)
 
         return output.getvalue()
