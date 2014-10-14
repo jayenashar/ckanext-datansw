@@ -3,11 +3,11 @@
     {% if h.check_access('package_create') %}
         <div class="page_primary_action" width="100%">
             {% link_for _('Add Dataset'), controller='package', action='new', class_='btn btn-primary', icon='plus-sign-alt' %}
-            <a style="float:right" class="btn btn-primary" href="/iar/summary.csv"><i class="icon-download"></i>Download Summary Table</a>
+            <a style="float:right" class="btn btn-primary" href="/data/summary.csv"><i class="icon-download"></i>Download Summary Table</a>
         </div>
 {% else %}
         <div class="page_primary_action" width="100%">
-            <a style="float:right" class="btn btn-primary" href="/iar/summary.csv"><i class="icon-download"></i>Download Summary Table</a>
+            <a style="float:right" class="btn btn-primary" href="/data/summary.csv"><i class="icon-download"></i>Download Summary Table</a>
         </div>
     {% endif %}
 {%  endblock %}
