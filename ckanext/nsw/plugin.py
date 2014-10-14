@@ -3,6 +3,12 @@ import ckan.plugins.toolkit as tk
 
 class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
+    plugins.implements(plugins.IRoutes, inherit=True)
+
+    def before_map(self, map):
+        map.connect('/summary.csv',
+                    controller='ckanext.nsw.controller:NSWController', action='summarycsv')
+        return map
 
     def update_config(self, config):
 
