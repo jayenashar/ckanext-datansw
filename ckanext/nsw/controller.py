@@ -19,7 +19,7 @@ class NSWController(PackageController):
 
         output = cStringIO.StringIO()
         csvwriter = csv.writer(output)
-        header = ['Title', 'Description', 'Publisher', 'Resource Name', 'Resource Description', 'Resource URL']
+        header = ['Title', 'Description', 'Organisation', 'Licence', 'Resource Name', 'Resource Description', 'Resource URL']
         csvwriter.writerow(header)
         response.headers['Content-Type'] = 'text/csv; charset=utf-8'
         response.headers["Content-Disposition"] = "attachment; filename=summary.csv"
@@ -33,12 +33,13 @@ class NSWController(PackageController):
         for pkg in query.all():
             try:
                 pkg_dict = tk.get_action("package_show")(context, {"id": pkg.id})
-                row = {}
-                row['Title'] = pkg_dict['title'].encode('ascii', 'ignore')
-                row['Description'] = pkg_dict['notes'].encode('ascii', 'ignore')
-                row['Publisher'] = pkg_dict['organization']['title'].encode('ascii',
+                row = []
+                row.append(pkg_dict['title'].encode('ascii', 'ignore'))
+                row.append(pkg_dict['notes'].encode('ascii', 'ignore'))
+                row.append(pkg_dict['organization']['title'].encode('ascii',
                                                                             'ignore') \
-                                    if 'organization' in pkg_dict and pkg_dict['organization'] != None else ''
+                                    if 'organization' in pkg_dict and pkg_dict['organization'] != None else ' ')
+                row.append(pkg_dict['license_title'].encode('ascii', 'ignore') if 'license_title' in pkg_dict and pkg_dict['license_title'] != None else ' ')
                 for resource in pkg_dict['resources']:
                     res_list = []
                     res_list.append(resource['name'].encode('ascii', 'ignore')
@@ -48,7 +49,7 @@ class NSWController(PackageController):
                                     if 'description' in resource and resource['description'] != None else '')
                     res_list.append(
                         resource['url'].encode('ascii', 'ignore') if 'url' in resource and resource['url'] != None else '')
-                    csvwriter.writerow(row.values() + res_list)
+                    csvwriter.writerow(row + res_list)
             except NotAuthorized:
                 pass
 
