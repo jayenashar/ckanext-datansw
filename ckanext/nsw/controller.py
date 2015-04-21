@@ -26,16 +26,12 @@ class NSWController(PackageController):
 
         context = {'model': model}
 
-        model = context['model']
 
-        query = model.Session.query(model.Package)
-
-        for pkg in query.all():
+        for pkg_dict in logic.get_action('package_search')(context,{'fq':'-harvest_portal:*','rows':9999})['results']:
             try:
-                pkg_dict = tk.get_action("package_show")(context, {"id": pkg.id})
                 row = []
                 row.append(pkg_dict['title'].encode('ascii', 'ignore'))
-                row.append(pkg_dict['notes'].encode('ascii', 'ignore'))
+                row.append(pkg_dict['notes'].encode('ascii', 'ignore') if 'notes' in pkg_dict and pkg_dict['notes'] != None else ' ')
                 row.append(pkg_dict['organization']['title'].encode('ascii',
                                                                             'ignore') \
                                     if 'organization' in pkg_dict and pkg_dict['organization'] != None else ' ')
