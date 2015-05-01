@@ -1,4 +1,6 @@
 {% ckan_extends %}
+
+{% block subtitle %}{{ _("Datasets") }} - Page {{c.page.page}} {% endblock %}
 {% block page_primary_action %}
     {% if h.check_access('package_create') %}
         <div class="page_primary_action" width="100%">
