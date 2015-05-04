@@ -618,6 +618,10 @@ body {
   -webkit-border-radius: 0px;
   border-radius: 0px;
 }
+.media-image img {
+  max-width: 70%;
+  max-height: 150px;
+}
 .media-image:before {
   content: "";
   position: absolute;
@@ -640,7 +644,7 @@ body {
 .organisation .media-item {
   width: 43%;
   text-align: center;
-  min-height: 250px;
+  min-height: 260px;
 }
 .media-item .media-image {
   float: right;
