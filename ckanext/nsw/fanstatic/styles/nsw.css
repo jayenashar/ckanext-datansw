@@ -436,8 +436,13 @@ input[type="color"]:focus,
   background-color: #ffffff;
   background-image: none;
 }
-.masthead a {
+.masthead .navigation {
+    margin-right: 0px;
+}
+.masthead .nav > li > a {
   color: #023a78;
+    padding-top: 8px;
+    padding-right: 12px;
 }
 .masthead .navigation .nav-pills li a:hover {
   background-color: #f2f2f2;
@@ -806,6 +811,8 @@ a.skip-link:focus {
 
 .empty, .simple-input .field .btn-search {
 color: #4d4d4d;
+    font-size: 0;
+    line-height: 0;
 }
 .format	a{
 color: lightgrey;

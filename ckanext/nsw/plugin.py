@@ -1,10 +1,16 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 
+def related_create(context, data_dict=None):
+    return {'success': False, 'msg': 'No one is allowed to create related items'}
+
 class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes, inherit=True)
+    plugins.implements(plugins.IAuthFunctions)
 
+    def get_auth_functions(self):
+        return {'related_create': related_create}
     def before_map(self, map):
         map.connect('/summary.csv',
                     controller='ckanext.nsw.controller:NSWController', action='summarycsv')
