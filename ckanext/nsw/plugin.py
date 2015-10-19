@@ -8,6 +8,12 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes, inherit=True)
     plugins.implements(plugins.IAuthFunctions)
+    plugins.implements(plugins.IFacets, inherit=True)
+
+    def dataset_facets(self, facets, package_type):
+        if 'dctype' in facets:
+            facets['dctype'] = 'Type'
+        return facets
 
     def get_auth_functions(self):
         return {'related_create': related_create}
