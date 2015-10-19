@@ -9,6 +9,26 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IRoutes, inherit=True)
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IFacets, inherit=True)
+    plugins.implements(plugins.IPackageController, inherit=True)
+
+    def after_search(self, search_results, data_dict):
+        if 'dctype' in search_results['facets']:
+            count = 0
+            for key in search_results['facets']['dctype']:
+                count = count + search_results['facets']['dctype'][key]
+            search_results['facets']['dctype']['Dataset'] = search_results['facets']['dctype'].get('Dataset',0) + (search_results['count'] - count)
+            restructured_facet = {
+                'title': 'dctype',
+                'items': []
+            }
+            for key_, value_ in search_results['facets']['dctype'].items():
+                new_facet_dict = {}
+                new_facet_dict['name'] = key_
+                new_facet_dict['display_name'] = key_
+                new_facet_dict['count'] = value_
+                restructured_facet['items'].append(new_facet_dict)
+            search_results['search_facets']['dctype'] = restructured_facet
+        return search_results
 
     def dataset_facets(self, facets, package_type):
         if 'dctype' in facets:
