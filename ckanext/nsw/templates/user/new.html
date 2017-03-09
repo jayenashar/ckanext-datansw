@@ -6,6 +6,8 @@
         <h1 class="page-heading">
             {% block page_heading %}{{ _('Register for an Account') }}{% endblock %}
         </h1>
+        <a href="https://portal.identityhub.nsw.gov.au" class="btn btn-primary">Request access using NSW Identity Hub</a>
+        <h2>or</h2>
         <div><p>Fields 'Username', 'Email', 'Password' and 'Confirm' are mandatory.</p></div>
         {{ c.form | safe }}
     </div>
