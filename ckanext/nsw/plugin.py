@@ -1,5 +1,6 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
+from ckanext.acl.interfaces import IACL
 
 def related_create(context, data_dict=None):
     return {'success': False, 'msg': 'No one is allowed to create related items'}
@@ -10,6 +11,7 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IAuthFunctions)
     plugins.implements(plugins.IFacets, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(IACL)
 
     def after_search(self, search_results, data_dict):
         if 'dctype' in search_results['facets']:
@@ -54,3 +56,8 @@ class NSWPlugin(plugins.SingletonPlugin):
 
         # Add this plugin's fanstatic dir.
         tk.add_resource('fanstatic', 'ckanext-nsw')
+
+    # IACL
+
+    def update_permission_list(self, perms):
+        perms.create_permission('user_delete')
