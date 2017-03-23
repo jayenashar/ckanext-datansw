@@ -4,7 +4,7 @@ allowed_roles = set(['admin', 'editor', 'member'])
 def nsw_org_mapper(saml_info):
     """Prepare org_dict using org=role[,role][|repeat] format."""
     tenancy = saml_info.get('tenancy', [])
-    if tenancy:
+    if tenancy[0]:
         # remove None values before converting into dict.
         # None in that case means that role in organization is not determined
         org_dict = dict(filter(None, [
