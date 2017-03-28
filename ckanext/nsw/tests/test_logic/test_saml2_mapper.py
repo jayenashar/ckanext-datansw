@@ -11,7 +11,7 @@ class TestSaml2Mapper(SimpleNSWTest):
     def test_saml2_mapper_none(self):
 
         result = nsw_org_mapper(SAML_INFO[0])
-        nt.assert_equals(result, None)
+        nt.assert_equals(result, {})
 
     def test_saml2_mapper_single_role(self):
 

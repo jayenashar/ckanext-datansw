@@ -12,7 +12,7 @@ def nsw_org_mapper(saml_info):
             for part in tenancy[0].split('|')
         ]))
         return org_dict
-    return None
+    return {}
 
 
 def _get_privileged_role(org, roles, separator=','):
