@@ -26,8 +26,8 @@
           {% if c.is_myself or h.check_access('sysadmin') %}
               <div class="info user-gen">
                   <dl>
-                      <dt>{{ _('GEN: ') }}</dt>
-                      <dd>{{ h.saml2_get_user_name_id(user.name) }}</dd>
+                      <dt>{{ _('GEN ') }} <span class="label" title="{{ _('This means only you can see this') }}">{{ _('Private') }}</span></dt>
+                      <dd>{{ h.saml2_get_user_name_id(user.id) }}</dd>
                   </dl>
               </div>
           {% endif %}
