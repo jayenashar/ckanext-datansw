@@ -8,7 +8,7 @@ def nsw_org_mapper(saml_info):
         # remove None values before converting into dict.
         # None in that case means that role in organization is not determined
         org_dict = dict(filter(None, [
-            _get_privileged_role(*part.split('='))
+            _get_privileged_role(*part.replace(' ', '').split('='))
             for part in tenancy[0].split('|')
         ]))
         return org_dict
