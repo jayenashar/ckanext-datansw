@@ -5,7 +5,7 @@ MAP = {
         'ID': 'id',
         'DisplayName': 'displayName',
         'Tenancy': 'tenancy'
-    }
+    },
     "to": {
     }
 }
