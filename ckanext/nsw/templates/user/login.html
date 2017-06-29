@@ -1,0 +1,11 @@
+{% ckan_extends %}
+
+{% block form %}
+  <h2>NSW Government employees</h2>
+  <a href="{{ h.url_for(controller='user', action='login', type='sso', came_from=c.came_from or '/dashboard') }}" class="btn btn-primary">{{ c.sso_button_text or _('Login with SSO') }}</a>
+  <br />
+  <br />
+  <h2>All other users</h2>
+  <p>Login with Data NSW account</p>
+  {% snippet "user/snippets/login_form.html", action=c.login_handler, error_summary=error_summary %}
+{% endblock %}
