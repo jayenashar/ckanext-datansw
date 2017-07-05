@@ -27,5 +27,7 @@ setup(
         [ckan.plugins]
 	# Add plugins here, eg
 	nsw=ckanext.nsw.plugin:NSWPlugin
+        [paste.paster_command]
+        nsw=ckanext.nsw.command:NSWCommand
 	""",
 )
