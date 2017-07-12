@@ -1,6 +1,5 @@
 {% ckan_extends %}
 
-{% set private_label = '<span class="label" title="%s">%s</span>'|format(_('This means only you can see this'), _('Private'))|safe %}
 {% block user_edit_form_about %}
 {% endblock %}
 
@@ -9,8 +8,3 @@
 
 {% block user_edit_form_old_password %}
 {% endblock %}
-
-{% block user_edit_form_email_field %}
-
-  {{ form.input('email', label=_('Email ') + private_label, id='field-email', type='email', value=data.email, error=errors.email, placeholder=_('eg. joe@example.com'), classes=['control-medium'], is_required=true) }}
-{% endblock user_edit_form_email_field %}
