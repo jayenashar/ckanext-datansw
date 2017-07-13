@@ -1,0 +1,9 @@
+{% ckan_extends %}
+
+{% block scripts %}
+  {% set private_label = ' <span class="label" title="%s">%s</span>'|format(_('This means only you can see this'), _('Private'))|safe %}
+  <script>
+    document.querySelector('label[for=field-email]').innerHTML += '{{ private_label }}';
+</script>
+
+{% endblock scripts %}
