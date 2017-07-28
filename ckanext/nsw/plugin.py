@@ -1,9 +1,23 @@
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 from ckanext.acl.interfaces import IACL
+from ckan.logic.action.get import user_list as ckan_user_list
+import sqlalchemy
+
+_desc = sqlalchemy.desc
+
 
 def related_create(context, data_dict=None):
-    return {'success': False, 'msg': 'No one is allowed to create related items'}
+    return {'success': False,
+            'msg': 'No one is allowed to create related items'}
+
+
+def nsw_user_list(context, data_dict):
+    model = context['model']
+    query = ckan_user_list(context, data_dict)
+    query = query.order_by(None).order_by(_desc(model.User.created))
+    return query
+
 
 class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
@@ -12,6 +26,7 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IFacets, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(IACL)
+    plugins.implements(plugins.IActions)
 
     def after_search(self, search_results, data_dict):
         if 'dctype' in search_results['facets']:
@@ -39,9 +54,11 @@ class NSWPlugin(plugins.SingletonPlugin):
 
     def get_auth_functions(self):
         return {'related_create': related_create}
+
     def before_map(self, map):
         map.connect('/summary.csv',
-                    controller='ckanext.nsw.controller:NSWController', action='summarycsv')
+                    controller='ckanext.nsw.controller:NSWController',
+                    action='summarycsv')
         return map
 
     def update_config(self, config):
@@ -61,3 +78,10 @@ class NSWPlugin(plugins.SingletonPlugin):
 
     def update_permission_list(self, perms):
         perms.create_permission('user_delete')
+
+    # IActions
+
+    def get_actions(self):
+        return {
+            'user_list': nsw_user_list
+        }
