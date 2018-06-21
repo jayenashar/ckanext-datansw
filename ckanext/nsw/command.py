@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
-
+import csv
 import paste.script
 from ckan.plugins import toolkit
+import tempfile
+
+from io import StringIO
 
 import ckan.model as model
 from ckan.lib.cli import CkanCommand
-
+import ckan.lib.helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -20,6 +23,7 @@ class NSWCommand(CkanCommand):
     Commands::
         dropuser <name> - completely removes user from DB if he does not have any meaningful relationship with data.
 	drop-oeh <name or id> - purges OEH datasets
+        maintainer-report
     """
 
     summary = __doc__.split('\n')[0]
@@ -38,6 +42,8 @@ class NSWCommand(CkanCommand):
             self._drop_user(self.args[1])
 	elif self.args[0] == 'drop-oeh':
             self._drop_oeh()
+        elif self.args[0] == 'maintainer-report':
+            self._maintainer_report()
         else:
             print self.usage
 
@@ -117,3 +123,17 @@ class NSWCommand(CkanCommand):
             if removed_count >= total:
                 break
         print('Done')
+
+    def _maintainer_report(self):
+        q = model.Session.query(model.Package)
+        output = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
+        writer = csv.writer(output)
+
+        writer.writerow(['Title', 'URL', 'Maintainer email'])
+        for pkg in q:
+            if pkg.extras.get('harvest_url'):
+                continue
+            writer.writerow([pkg.title, h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
+
+
+        print('Report: {}'.format(output.name))
