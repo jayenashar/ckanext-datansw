@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import logging
-
+import csv
 import paste.script
+import tempfile
+
+from io import StringIO
 
 import ckan.model as model
 from ckan.lib.cli import CkanCommand
-
+import ckan.lib.helpers as h
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +21,7 @@ class NSWCommand(CkanCommand):
 
     Commands::
         dropuser <name> - completely removes user from DB if he does not have any meaningful relationship with data.
+        maintainer-report
     """
 
     summary = __doc__.split('\n')[0]
@@ -30,10 +34,13 @@ class NSWCommand(CkanCommand):
 
     def command(self):
         self._load_config()
-        if len(self.args) < 2:
+        if len(self.args) < 1:
             print self.usage
         elif self.args[0] == 'dropuser':
             self._drop_user(self.args[1])
+        elif self.args[0] == 'maintainer-report':
+            self._maintainer_report()
+
         else:
             print self.usage
 
@@ -64,3 +71,17 @@ class NSWCommand(CkanCommand):
         model.Session.delete(user)
         model.Session.commit()
         print('Done')
+
+    def _maintainer_report(self):
+        q = model.Session.query(model.Package)
+        output = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
+        writer = csv.writer(output)
+
+        writer.writerow(['Title', 'URL', 'Maintainer email'])
+        for pkg in q:
+            if pkg.extras.get('harvest_url'):
+                continue
+            writer.writerow([pkg.title, h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
+
+
+        print('Report: {}'.format(output.name))
