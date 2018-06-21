@@ -2,6 +2,7 @@
 import logging
 
 import paste.script
+from ckan.plugins import toolkit
 
 import ckan.model as model
 from ckan.lib.cli import CkanCommand
@@ -18,6 +19,7 @@ class NSWCommand(CkanCommand):
 
     Commands::
         dropuser <name> - completely removes user from DB if he does not have any meaningful relationship with data.
+	drop-oeh <name or id> - purges OEH datasets
     """
 
     summary = __doc__.split('\n')[0]
@@ -30,10 +32,12 @@ class NSWCommand(CkanCommand):
 
     def command(self):
         self._load_config()
-        if len(self.args) < 2:
+        if len(self.args) < 1:
             print self.usage
         elif self.args[0] == 'dropuser':
             self._drop_user(self.args[1])
+	elif self.args[0] == 'drop-oeh':
+            self._drop_oeh()
         else:
             print self.usage
 
@@ -63,4 +67,53 @@ class NSWCommand(CkanCommand):
             return
         model.Session.delete(user)
         model.Session.commit()
+        print('Done')
+
+
+    def _drop_oeh(self):
+        def _drop_datasets(q):
+            packages = toolkit.get_action('package_search')(None, {
+                'fq': q,
+                'rows': 100
+            })
+            i = 0
+            for i, dataset in enumerate(packages['results'], 1):
+                print('[{}/{}] Purge {}'.format(i + removed_count, total,
+                                                dataset['name']))
+                pkg = model.Package.get(dataset['id'])
+                try:
+                    model.Session.query(model.PackageExtraRevision).filter_by(
+                        package_id=dataset['id']).delete()
+                    model.Session.query(model.PackageExtra).filter_by(
+                        package_id=dataset['id']).delete()
+                    pkg.purge()
+                    model.Session.commit()
+                except Exception as e:
+                    print('\tError: {}'.format(e))
+                else:
+                    print('\tSuccess')
+            return i
+
+        id_ = None
+        if len(self.args) > 1:
+            id_ = self.args[1]
+        q = 'organization:office-of-environment-and-heritage-oeh'
+        if id_:
+            q += ' AND (id:{0} OR name:{0})'.format(id_)
+        packages = toolkit.get_action('package_search')(None, {
+            'fq': q,
+            'rows': 0
+        })
+        total = packages['count']
+        removed_count = 0
+        print('Found {} datasets. Purging...'.format(total))
+
+        while True:
+            if removed_count:
+                print(
+                    'Already removed {} datasets. Fetching next portion'.
+                    format(removed_count))
+            removed_count += _drop_datasets(q)
+            if removed_count >= total:
+                break
         print('Done')
