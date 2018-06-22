@@ -133,7 +133,7 @@ class NSWCommand(CkanCommand):
         for pkg in q:
             if pkg.extras.get('harvest_url'):
                 continue
-            writer.writerow([pkg.title, h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
+            writer.writerow([pkg.title.encode('utf8'), h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
 
 
         print('Report: {}'.format(output.name))
