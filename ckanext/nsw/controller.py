@@ -16,13 +16,13 @@ import csv
 class NSWController(PackageController):
     def summarycsv(self, html=False):
         import ckan.model as model
+        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+        response.headers["Content-Disposition"] = "attachment; filename=summary.csv"
 
         output = cStringIO.StringIO()
         csvwriter = csv.writer(output)
         header = ['Title', 'Description', 'Organisation', 'Licence', 'Resource Name', 'Resource Description', 'Resource URL']
         csvwriter.writerow(header)
-        response.headers['Content-Type'] = 'application/octet-stream; charset=utf-8'
-        response.headers["Content-Disposition"] = "attachment; filename=summary.csv"
 
         context = {'model': model}
 
