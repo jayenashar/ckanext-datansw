@@ -16,7 +16,6 @@ import csv
 class NSWController(PackageController):
     def summarycsv(self, html=False):
         import ckan.model as model
-        response.headers['Content-Type'] = 'text/csv; charset=utf-8'
         response.headers["Content-Disposition"] = "attachment; filename=summary.csv"
 
         output = cStringIO.StringIO()
