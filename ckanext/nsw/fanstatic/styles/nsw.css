@@ -812,7 +812,7 @@ a.skip-link:focus {
   color: #4d4d4d;
 }
 .search-form .search-input.search-giant button[type=submit] {
-  margin-top: -15px;
+  margin-top: -10px;
 }
 .format a {
   color: lightgrey;
