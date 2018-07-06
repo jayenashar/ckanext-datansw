@@ -66,10 +66,8 @@
               ('about', _('About'))
               ) }}
               {% block header_account_notlogged %}
-              <li>{% link_for _('Log in'), controller='user', action='login' %}</li>
-              {% if h.check_access('user_create') %}
-                <li>{% link_for _('Register'), controller='user', action='register', class_='sub' %}</li>
-              {% endif %}
+              <li>{% link_for _('Data Owner Login'), controller='user', action='login', type='sso', came_from='/dashboard' %}</li>
+
               {% endblock %}
             </ul>
           </nav>
@@ -83,6 +81,6 @@
 {% endblock %}
 {% block header_site_navigation_tabs %}
   <li><a href="https://data.nsw.gov.au/contact">Request a dataset</a></li>
-  <li><a href="https://www.finance.nsw.gov.au/ict/sites/default/files/Guidelines%20for%20Agencies%20using%20data.nsw_.pdf">Upload a dataset</a></li>
+  <li><a href="https://www.digital.nsw.gov.au/sites/default/files/Upload%20a%20Dataset%20and%20Data%20Resource.pdf">Upload a dataset</a></li>
   <li><a href="https://www.digital.nsw.gov.au/">Visit digital.nsw</a></li>
 {% endblock %}
