@@ -824,3 +824,19 @@ a.skip-link:focus {
 .site-search .field .btn-search i {
   color: #4d4d4d;
 }
+.masthead .nav > li > a,
+.masthead .nav > li > a:focus,
+.masthead .nav > li > a:active,
+.masthead .nav > li > a:hover {
+  color: #023a78;
+}
+.btn [class^="fa-"],
+.nav [class^="fa-"],
+.module-heading [class^="fa-"],
+.dropdown [class^="fa-"],
+.btn [class*=" fa-"],
+.nav [class*=" fa-"],
+.module-heading [class*=" fa-"],
+.dropdown [class*=" fa-"] {
+  margin-right: 4px;
+}

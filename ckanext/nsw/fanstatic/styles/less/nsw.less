@@ -199,3 +199,16 @@ color: lightgrey;
 	color: #4d4d4d;
     }
 }
+.masthead {
+    .nav > li > a {
+	&, &:focus, &:active, &:hover {
+	    color: @primary;
+	}
+    }
+}
+
+.btn, .nav, .module-heading, .dropdown {
+    & [class^="fa-"], & [class*=" fa-"] {
+	margin-right: 4px;
+    }
+}
