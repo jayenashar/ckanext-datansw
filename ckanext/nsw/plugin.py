@@ -56,7 +56,7 @@ class NSWPlugin(plugins.SingletonPlugin):
         return {'related_create': related_create}
 
     def before_map(self, map):
-        map.connect('/summary.csv',
+        map.connect('/dataset/summary.csv',
                     controller='ckanext.nsw.controller:NSWController',
                     action='summarycsv')
         return map

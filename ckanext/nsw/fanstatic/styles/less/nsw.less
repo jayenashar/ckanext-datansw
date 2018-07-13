@@ -178,8 +178,37 @@ a.skip-link:focus {
 .empty, .simple-input .field .btn-search {
 color: #4d4d4d;
 }
+.search-form {
+    .search-input.search-giant {
+	button[type=submit] {
+	    margin-top: 0;
+	    top: 12px;
+	}
+    }
+
+}
 
 
 .format a{
 color: lightgrey;
+}
+
+.site-search .field .btn-search{
+    color: transparent;
+    i {
+	color: #4d4d4d;
+    }
+}
+.masthead {
+    .nav > li > a {
+	&, &:focus, &:active, &:hover {
+	    color: @primary;
+	}
+    }
+}
+
+.btn, .nav, .module-heading, .dropdown {
+    & [class^="fa-"], & [class*=" fa-"] {
+	margin-right: 4px;
+    }
 }
