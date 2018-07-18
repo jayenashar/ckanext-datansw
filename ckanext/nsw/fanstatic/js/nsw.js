@@ -150,3 +150,27 @@ window.onload = function () {
     rssfeedsetup();
   }
 }
+
+if ($('.pagination ul li').length > 10) {
+  $('.pagination').append(
+    `<div class='pagination-go-to'>
+      Go to page 
+      <input type='text'> 
+      <button>Go</button>
+    </div>`
+  );
+
+  $('.pagination-go-to button').on('click', function() {
+    var page = $(this).prev()[0].value;
+    if (page) {
+      window.location.replace('?page='+page);
+    };
+  });
+
+  $('.pagination-go-to input[type="text"]').keydown(function(e){ 
+    var keyCode = (e.keyCode ? e.keyCode : e.which);   
+    if (keyCode == 13 && this.value) {
+      window.location.replace('?page='+this.value);
+    };
+  });
+}
