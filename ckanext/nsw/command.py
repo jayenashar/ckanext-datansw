@@ -180,10 +180,15 @@ class NSWCommand(CkanCommand):
                 if resp.ok:
                     continue
                 code, reason = resp.status_code, resp.reason
-            except exc.ConnectTimeout:
+            except (exc.ConnectTimeout, exc.ReadTimeout):
                 code, reason = 504, 'Request timeout'
             except exc.ConnectionError:
                 code, reason = 520, 'Connection Error'
+            except exc.MissingSchema:
+                pass
+            except exc.InvalidURL:
+                code, reason = 520, 'Invalid URL'
+
             report.writerow([page, res.url, code, reason])
             broken_count += 1
         file.close()

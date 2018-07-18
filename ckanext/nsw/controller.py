@@ -33,7 +33,7 @@ class NSWController(PackageController):
         if request.method == 'POST' and last_check:
             set_attachment(
                 response,
-                'DataNSW - Broken Links - {:%Y-%m-%d}.csv'.format(last_check)
+                'DataNSW-BrokenLinks-{:%Y-%m-%d}.csv'.format(last_check)
             )
             return open(filepath).read()
         extra_vars = {'last_check': last_check}
