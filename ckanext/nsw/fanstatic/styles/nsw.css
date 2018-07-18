@@ -847,6 +847,8 @@ a.skip-link:focus {
 .pagination-go-to {
   display: inline-block;
   overflow: hidden;
+  vertical-align: top;
+  line-height: 35px;
   margin-left: 20px;
 }
 .pagination-go-to input[type="text"] {
@@ -877,4 +879,11 @@ a.skip-link:focus {
   background: #f5f5f5;
   color: #4c4c4c;
   outline: none;
+}
+@media (max-width: 767px) {
+  .pagination-go-to {
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
+  }
 }
