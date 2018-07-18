@@ -2,6 +2,7 @@
 import logging
 import csv
 import paste.script
+from ckan.plugins import toolkit
 import tempfile
 import requests
 import sys
@@ -26,6 +27,7 @@ class NSWCommand(CkanCommand):
 
     Commands::
         dropuser <name> - completely removes user from DB if he does not have any meaningful relationship with data.
+	drop-oeh <name or id> - purges OEH datasets
         maintainer-report
     """
 
@@ -47,11 +49,12 @@ class NSWCommand(CkanCommand):
             print self.usage
         elif self.args[0] == 'dropuser':
             self._drop_user(self.args[1])
+	elif self.args[0] == 'drop-oeh':
+            self._drop_oeh()
         elif self.args[0] == 'maintainer-report':
             self._maintainer_report()
         elif self.args[0] == 'broken-links-report':
             self._broken_links_report()
-
         else:
             print self.usage
 
@@ -90,6 +93,55 @@ class NSWCommand(CkanCommand):
         model.Session.commit()
         print('Done')
 
+
+    def _drop_oeh(self):
+        def _drop_datasets(q):
+            packages = toolkit.get_action('package_search')(None, {
+                'fq': q,
+                'rows': 100
+            })
+            i = 0
+            for i, dataset in enumerate(packages['results'], 1):
+                print('[{}/{}] Purge {}'.format(i + removed_count, total,
+                                                dataset['name']))
+                pkg = model.Package.get(dataset['id'])
+                try:
+                    model.Session.query(model.PackageExtraRevision).filter_by(
+                        package_id=dataset['id']).delete()
+                    model.Session.query(model.PackageExtra).filter_by(
+                        package_id=dataset['id']).delete()
+                    pkg.purge()
+                    model.Session.commit()
+                except Exception as e:
+                    print('\tError: {}'.format(e))
+                else:
+                    print('\tSuccess')
+            return i
+
+        id_ = None
+        if len(self.args) > 1:
+            id_ = self.args[1]
+        q = 'organization:office-of-environment-and-heritage-oeh'
+        if id_:
+            q += ' AND (id:{0} OR name:{0})'.format(id_)
+        packages = toolkit.get_action('package_search')(None, {
+            'fq': q,
+            'rows': 0
+        })
+        total = packages['count']
+        removed_count = 0
+        print('Found {} datasets. Purging...'.format(total))
+
+        while True:
+            if removed_count:
+                print(
+                    'Already removed {} datasets. Fetching next portion'.
+                    format(removed_count))
+            removed_count += _drop_datasets(q)
+            if removed_count >= total:
+                break
+        print('Done')
+
     def _maintainer_report(self):
         q = model.Session.query(model.Package)
         output = tempfile.NamedTemporaryFile(suffix='.csv', delete=False)
@@ -99,11 +151,7 @@ class NSWCommand(CkanCommand):
         for pkg in q:
             if pkg.extras.get('harvest_url'):
                 continue
-            writer.writerow([
-                pkg.title,
-                h.url_for('dataset_read', id=pkg.name, qualified=True),
-                pkg.maintainer_email
-            ])
+            writer.writerow([pkg.title.encode('utf8'), h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
 
         print('Report: {}'.format(output.name))
 
