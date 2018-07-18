@@ -151,26 +151,51 @@ window.onload = function () {
   }
 }
 
+function searchToObject(search_str) {
+  var pairs = search_str.substring(1).split('&'),
+      obj = {};
+  for ( i in pairs ) {
+    if ( pairs[i] === "" ) continue;
+    pair = pairs[i].split("=");
+    obj[ decodeURIComponent( pair[0] ) ] = decodeURIComponent( pair[1] );
+  };
+  return obj
+}
+
+function objectToSearch(params) {
+  var arr = [],
+      str = '?';
+  for ( i in params ) {
+    arr.push(i+'='+params[i]);
+  };
+  str += arr.join('&');
+  return str
+}
+
 if ($('.pagination ul li').length > 10) {
   $('.pagination').append(
     `<div class='pagination-go-to'>
-      Go to page 
-      <input type='text'> 
-      <button>Go</button>
+    Go to page 
+    <input type='text'> 
+    <button>Go</button>
     </div>`
   );
+
+  var params = searchToObject(window.location.search);
 
   $('.pagination-go-to button').on('click', function() {
     var page = $(this).prev()[0].value;
     if (page) {
-      window.location.replace('?page='+page);
+      params['page'] = page;
+      window.location.replace(objectToSearch(params));
     };
   });
 
   $('.pagination-go-to input[type="text"]').keydown(function(e){ 
     var keyCode = (e.keyCode ? e.keyCode : e.which);   
     if (keyCode == 13 && this.value) {
-      window.location.replace('?page='+this.value);
+      params['page'] = this.value;
+      window.location.replace(objectToSearch(params));
     };
   });
 }
