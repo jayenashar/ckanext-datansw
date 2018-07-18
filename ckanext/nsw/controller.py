@@ -1,51 +1,73 @@
-from ckan.common import response
-from ckan.controllers.package import PackageController
-import ckan.logic as logic
-import ckan.plugins.toolkit as tk
-
-import ckan.lib.base as base
-
-NotFound = logic.NotFound
-NotAuthorized = logic.NotAuthorized
-ValidationError = logic.ValidationError
 import cStringIO
-
 import csv
+import os
+
+from datetime import datetime
+from operator import methodcaller
+
+import ckan.plugins.toolkit as tk
+import ckan.logic as logic
+from ckan.common import response, request, config
+from ckan.controllers.package import PackageController
+
+
+ascii = methodcaller('encode', 'ascii', 'ignore')
+
+
+def set_attachment(response, filename):
+    response.headers["Content-Disposition"
+                     ] = "attachment; filename=" + filename
+
+
+def get_key(self, container, key, default=''):
+    return container.get(key) or default
 
 
 class NSWController(PackageController):
+    def broken_links(self):
+        filepath = config['nsw.report.broken_links_filepath']
+        try:
+            last_check = datetime.fromtimestamp(os.stat(filepath).st_mtime)
+        except OSError:
+            last_check = None
+        if request.method == 'POST' and last_check:
+            set_attachment(
+                response,
+                'DataNSW - Broken Links - {:%Y-%m-%d}.csv'.format(last_check)
+            )
+            return open(filepath).read()
+        extra_vars = {'last_check': last_check}
+        return tk.render('admin/broken_links.html', extra_vars)
+
     def summarycsv(self, html=False):
         import ckan.model as model
-        response.headers["Content-Disposition"] = "attachment; filename=summary.csv"
-
+        set_attachment(response, 'summary.csv')
         output = cStringIO.StringIO()
         csvwriter = csv.writer(output)
-        header = ['Title', 'Description', 'Organisation', 'Licence', 'Resource Name', 'Resource Description', 'Resource URL']
-        csvwriter.writerow(header)
 
-        context = {'model': model}
+        csvwriter.writerow([
+            'Title', 'Description', 'Organisation', 'Licence', 'Resource Name',
+            'Resource Description', 'Resource URL'
+        ])
 
-
-        for pkg_dict in logic.get_action('package_search')(context,{'fq':'-harvest_portal:*','rows':9999})['results']:
-            try:
-                row = []
-                row.append(pkg_dict['title'].encode('ascii', 'ignore'))
-                row.append(pkg_dict['notes'].encode('ascii', 'ignore') if 'notes' in pkg_dict and pkg_dict['notes'] != None else ' ')
-                row.append(pkg_dict['organization']['title'].encode('ascii',
-                                                                            'ignore') \
-                                    if 'organization' in pkg_dict and pkg_dict['organization'] != None else ' ')
-                row.append(pkg_dict['license_title'].encode('ascii', 'ignore') if 'license_title' in pkg_dict and pkg_dict['license_title'] != None else ' ')
-                for resource in pkg_dict['resources']:
-                    res_list = []
-                    res_list.append(resource['name'].encode('ascii', 'ignore')
-                                    if 'name' in resource and resource['name'] != None else '')
-                    res_list.append(
-                        resource['description'].encode('ascii', 'ignore')
-                                    if 'description' in resource and resource['description'] != None else '')
-                    res_list.append(
-                        resource['url'].encode('ascii', 'ignore') if 'url' in resource and resource['url'] != None else '')
-                    csvwriter.writerow(row + res_list)
-            except NotAuthorized:
-                pass
+        data = logic.get_action('package_search')({
+            'model': model
+        }, {
+            'fq': '-harvest_portal:*',
+            'rows': 9999
+        })
+        for pkg_dict in data['results']:
+            row = []
+            row.append(ascii(pkg_dict['title']))
+            row.append(ascii(get_key(pkg_dict, 'notes')))
+            row.append(
+                ascii(get_key(pkg_dict.get('organization', {}), 'title'))
+            )
+            row.append(ascii(get_key(pkg_dict, 'license_title')))
+            for resource in pkg_dict['resources']:
+                res_list = []
+                for key in ('name', 'description', 'url'):
+                    res_list.append(ascii(get_key(resource, key)))
+                csvwriter.writerow(row + res_list)
 
         return output.getvalue()

@@ -1,3 +1,4 @@
+from ckan.common import config
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 from ckanext.acl.interfaces import IACL
@@ -8,8 +9,10 @@ _desc = sqlalchemy.desc
 
 
 def related_create(context, data_dict=None):
-    return {'success': False,
-            'msg': 'No one is allowed to create related items'}
+    return {
+        'success': False,
+        'msg': 'No one is allowed to create related items'
+    }
 
 
 def nsw_user_list(context, data_dict):
@@ -33,11 +36,12 @@ class NSWPlugin(plugins.SingletonPlugin):
             count = 0
             for key in search_results['facets']['dctype']:
                 count = count + search_results['facets']['dctype'][key]
-            search_results['facets']['dctype']['Dataset'] = search_results['facets']['dctype'].get('Dataset',0) + (search_results['count'] - count)
-            restructured_facet = {
-                'title': 'dctype',
-                'items': []
-            }
+            search_results['facets'][
+                'dctype'
+            ]['Dataset'] = search_results['facets']['dctype'].get(
+                'Dataset', 0
+            ) + (search_results['count'] - count)
+            restructured_facet = {'title': 'dctype', 'items': []}
             for key_, value_ in search_results['facets']['dctype'].items():
                 new_facet_dict = {}
                 new_facet_dict['name'] = key_
@@ -56,12 +60,27 @@ class NSWPlugin(plugins.SingletonPlugin):
         return {'related_create': related_create}
 
     def before_map(self, map):
-        map.connect('/dataset/summary.csv',
-                    controller='ckanext.nsw.controller:NSWController',
-                    action='summarycsv')
+        map.connect(
+            '/dataset/summary.csv',
+            controller='ckanext.nsw.controller:NSWController',
+            action='summarycsv'
+        )
+        map.connect(
+            'broken_links_report',
+            '/ckan-admin/report/broken-links',
+            controller='ckanext.nsw.controller:NSWController',
+            action='broken_links',
+            ckan_icon='link'
+        )
         return map
 
     def update_config(self, config):
+        conf_directive = 'nsw.report.broken_links_filepath'
+        if not config.get(conf_directive):
+            raise KeyError(
+                'Please, specify `{}` inside your config file'.
+                format(conf_directive)
+            )
 
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
         # that CKAN will use this plugin's custom templates.
@@ -74,6 +93,11 @@ class NSWPlugin(plugins.SingletonPlugin):
         # Add this plugin's fanstatic dir.
         tk.add_resource('fanstatic', 'ckanext-nsw')
 
+        if tk.check_ckan_version(min_version='2.4'):
+            tk.add_ckan_admin_tab(
+                config, 'broken_links_report', 'Broken Links'
+            )
+
     # IACL
 
     def update_permission_list(self, perms):
@@ -82,6 +106,4 @@ class NSWPlugin(plugins.SingletonPlugin):
     # IActions
 
     def get_actions(self):
-        return {
-            'user_list': nsw_user_list
-        }
+        return {'user_list': nsw_user_list}
