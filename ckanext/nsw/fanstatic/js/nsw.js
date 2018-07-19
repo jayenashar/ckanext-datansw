@@ -105,6 +105,10 @@ function gazSearch(gazURL) {
   }
 }
 
+function initTooltips() {
+  $('[data-toggle="tooltip"]').tooltip();
+}
+
 window.onload = function () {
   addAltToAvatar();
   addTextToI();
@@ -114,7 +118,7 @@ window.onload = function () {
   correctNums();
   navigationInH3();
   viewErrorHide();
-
+  initTooltips();
 
   $("#field-spatial_coverage").change(function (e) {
     gazURL = e.target.value;
@@ -175,8 +179,8 @@ function objectToSearch(params) {
 if ($('.pagination ul li').length > 10) {
   $('.pagination').append(
     `<div class='pagination-go-to'>
-    Go to page 
-    <input type='text'> 
+    Go to page
+    <input type='text'>
     <button>Go</button>
     </div>`
   );
@@ -191,8 +195,8 @@ if ($('.pagination ul li').length > 10) {
     };
   });
 
-  $('.pagination-go-to input[type="text"]').keydown(function(e){ 
-    var keyCode = (e.keyCode ? e.keyCode : e.which);   
+  $('.pagination-go-to input[type="text"]').keydown(function(e){
+    var keyCode = (e.keyCode ? e.keyCode : e.which);
     if (keyCode == 13 && this.value) {
       params['page'] = this.value;
       window.location.replace(objectToSearch(params));
