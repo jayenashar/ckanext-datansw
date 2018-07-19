@@ -5,11 +5,13 @@ import os
 from datetime import datetime
 from operator import methodcaller
 
+from ckan.lib.search import rebuild, commit, clear
+import ckan.model as model
 import ckan.plugins.toolkit as tk
 import ckan.logic as logic
-from ckan.common import response, request, config
+import ckan.lib.helpers as h
+from ckan.common import response, request, config, g
 from ckan.controllers.package import PackageController
-
 
 ascii = methodcaller('encode', 'ascii', 'ignore')
 
@@ -24,7 +26,51 @@ def get_key(self, container, key, default=''):
 
 
 class NSWController(PackageController):
+    def format_mapping(self):
+        try:
+            tk.check_access('sysadmin', {'user': g.user, model: model})
+        except tk.NotAuthorized:
+            return tk.abort(403)
+        if request.method == 'POST':
+            old = request.POST.get('from')
+            new = request.POST.get('to')
+            if old and new:
+                ids = set()
+                res_query = model.Session.query(model.Resource).filter_by(format=old, state='active')
+                for res in res_query:
+                    ids.add(res.package_id)
+
+                res_query.update({'format': new})
+                model.Session.commit()
+                for id in ids:
+                    clear(id)
+                    rebuild(id, defer_commit=True)
+                commit()
+                tk.h.flash_success(
+                    'Updated. Records changed: {}'.format(len(ids))
+                )
+            return tk.redirect_to('format_mapping')
+
+        defined = set(
+            map(lambda (_1, fmt, _3): fmt,
+                h.resource_formats().values())
+        )
+        used = {
+            fmt
+            for (fmt,
+                 ) in model.Session.query(model.Resource.format).distinct()
+            if fmt
+        }
+        undefined = used - defined
+
+        extra_vars = {'undefined': undefined, 'defined': defined}
+        return tk.render('admin/format_mapping.html', extra_vars)
+
     def broken_links(self):
+        try:
+            tk.check_access('sysadmin', {'user': g.user, model: model})
+        except tk.NotAuthorized:
+            return tk.abort(403)
         filepath = config['nsw.report.broken_links_filepath']
         try:
             last_check = datetime.fromtimestamp(os.stat(filepath).st_mtime)
