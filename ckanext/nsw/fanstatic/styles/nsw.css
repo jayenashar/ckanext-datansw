@@ -791,7 +791,7 @@ a.skip-link:focus {
   color: white;
   background: #BF1722;
   outline: 0;
-  transition: background 0.5s, color 0.5s;
+  transition: background .5s, color .5s;
 }
 .pagination ul > .active > a,
 .pagination ul > .active > span {
@@ -908,4 +908,7 @@ a.skip-link:focus {
 .nav-facet .nav-item a {
   line-height: 18px;
   padding-right: 25px;
+}
+.dataset-heading .tooltip {
+  max-width: 200px;
 }
