@@ -887,3 +887,22 @@ a.skip-link:focus {
     margin-top: 5px;
   }
 }
+.nav-facet .nav-item.active a span {
+  white-space: normal;
+}
+.nav-facet .nav-item.active a:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -16px;
+  height: 100%;
+  width: 15px;
+  background: url('../images/triangle.png') no-repeat left center;
+  background-size: contain;
+  border: none;
+  border-left: 1px solid #023a78;
+}
+.nav-facet .nav-item a {
+  line-height: 18px;
+  padding-right: 25px;
+}
