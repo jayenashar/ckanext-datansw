@@ -791,7 +791,7 @@ a.skip-link:focus {
   color: white;
   background: #BF1722;
   outline: 0;
-  transition: background .5s, color .5s;
+  transition: background 0.5s, color 0.5s;
 }
 .pagination ul > .active > a,
 .pagination ul > .active > span {
@@ -886,6 +886,9 @@ a.skip-link:focus {
     margin-left: 0;
     margin-top: 5px;
   }
+}
+.tooltip-inner {
+  text-align: left;
 }
 .nav-facet .nav-item.active a span {
   white-space: normal;
