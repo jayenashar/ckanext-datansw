@@ -184,8 +184,8 @@ class NSWCommand(CkanCommand):
                 code, reason = 504, 'Request timeout'
             except exc.ConnectionError:
                 code, reason = 520, 'Connection Error'
-            except exc.MissingSchema:
-                pass
+            except (exc.MissingSchema, exc.InvalidSchema):
+                continue
             except exc.InvalidURL:
                 code, reason = 520, 'Invalid URL'
 
