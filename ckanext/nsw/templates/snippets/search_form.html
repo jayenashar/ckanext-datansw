@@ -28,7 +28,9 @@
     {% if sorting %}
     <div class="form-select control-group control-order-by">
         <label for="field-order-by">
+	    {% if sorting_tooltip %}
 	    <i class="fa fa-info-circle" data-toggle="tooltip" data-html="true" data-placement="bottom" title="{{ h.render_markdown(sorting_tooltip) }}"></i>
+	    {% endif %}
 	    {{ _('Order by') }}
 	</label>
         <select id="field-order-by" name="sort">
