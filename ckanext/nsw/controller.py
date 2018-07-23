@@ -1,6 +1,7 @@
 import cStringIO
 import csv
 import os
+import json
 
 from datetime import datetime
 from operator import methodcaller
@@ -10,7 +11,7 @@ import ckan.model as model
 import ckan.plugins.toolkit as tk
 import ckan.logic as logic
 import ckan.lib.helpers as h
-from ckan.common import response, request, config, g
+from ckan.common import response, request, config, g, c
 from ckan.controllers.package import PackageController
 
 ascii = methodcaller('encode', 'ascii', 'ignore')
@@ -36,7 +37,8 @@ class NSWController(PackageController):
             new = request.POST.get('to')
             if old and new:
                 ids = set()
-                res_query = model.Session.query(model.Resource).filter_by(format=old, state='active')
+                res_query = model.Session.query(model.Resource).filter_by(
+                    format=old, state='active')
                 for res in res_query:
                     ids.add(res.package_id)
 
@@ -117,3 +119,51 @@ class NSWController(PackageController):
                 csvwriter.writerow(row + res_list)
 
         return output.getvalue()
+
+    def license_mapping(self):
+        try:
+            tk.check_access('sysadmin', {'user': g.user, model: model})
+        except tk.NotAuthorized:
+            return tk.abort(403)
+        if request.method == 'POST':
+            license_id = request.POST.get('license_id')
+            license_label = request.POST.get('license_label')
+
+            if license_id and license_label:
+                mapped_licenses = model.get_system_info('mapped_licenses')
+                if mapped_licenses:
+                    mapped_licenses = json.loads(mapped_licenses)
+                    mapped_licenses[license_id] = license_label
+                    mapped_licenses = json.dumps(mapped_licenses)
+                    model.set_system_info(
+                        'mapped_licenses', str(mapped_licenses))
+                else:
+                    new_licenses = {license_id: license_label}
+                    new_licenses = json.dumps(new_licenses)
+                    model.set_system_info(
+                        'mapped_licenses', str(new_licenses))
+
+            return tk.redirect_to('license_mapping')
+
+        query = model.Session.query(model.Package.license_id)
+        defined_licenses = []
+        undefined_licenses = set()
+
+        licenses_file = config.get('licenses_group_url', None)
+        licenses_file = licenses_file.replace('file://', '')
+
+        if licenses_file:
+            with open(licenses_file) as f:
+                licenses_info = json.load(f)
+
+            for i in licenses_info:
+                defined_licenses.append(i['id'])
+
+            for lic in query:
+                if lic[0] not in defined_licenses:
+                    undefined_licenses.add(lic[0])
+
+        extra_vars = {
+            'undefined': undefined_licenses
+        }
+        return tk.render('admin/license_mapping.html', extra_vars)

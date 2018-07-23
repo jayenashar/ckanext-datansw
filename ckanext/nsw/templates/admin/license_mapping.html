@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %} {% block primary_content_inner %}
+<div>
+  <h2>{{ _('Licenses mapping') }}</h2>
+  {% if undefined|length %} 
+    {% trans %}
+      <p>Here is you can add custom labels for licenses from external sources.</p>
+    {% endtrans %}
+    <form class="form" method="POST" action="">
+      <div class="form-group">
+        <select name="license_id">
+          {% for value in undefined %}
+            {% if value %}
+              <option value="{{ value }}">{{ value }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <input class="form-control" name="license_label" placeholder="License's Label:" type="text" value="" />
+      </div>
+      <input name="" type="submit" value="Add Label" class="btn btn-primary" />
+    </form>
+    <hr/> 
+  {% else %}
+    <p class="muted">{{ _('It seems that there is no any external license in use') }}</p>
+  {% endif %}
+</div>
+{% endblock %} 
+
+{% block secondary_content %}
+<div class="module module-narrow module-shallow">
+  <h2 class="module-heading">
+    <i class="icon-info-sign"></i>
+    {{ _('License mapping') }}
+  </h2>
+  <div class="module-content">
+    <p>
+      {{ _('Update mapping') }}
+    </p>
+  </div>
+</div>
+{% endblock %}
