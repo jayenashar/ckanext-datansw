@@ -6,6 +6,8 @@ import json
 from datetime import datetime
 from operator import methodcaller
 
+from sqlalchemy import func
+
 from ckan.lib.search import rebuild, commit, clear
 import ckan.model as model
 import ckan.plugins.toolkit as tk
@@ -38,7 +40,8 @@ class NSWController(PackageController):
             if old and new:
                 ids = set()
                 res_query = model.Session.query(model.Resource).filter_by(
-                    format=old, state='active')
+                    format=old, state='active'
+                )
                 for res in res_query:
                     ids.add(res.package_id)
 
@@ -57,15 +60,35 @@ class NSWController(PackageController):
             map(lambda (_1, fmt, _3): fmt,
                 h.resource_formats().values())
         )
-        used = {
-            fmt
-            for (fmt,
-                 ) in model.Session.query(model.Resource.format).distinct()
-            if fmt
+        db_formats = model.Session.query(
+            model.Resource.format, func.count(model.Resource.id),
+            func.count(model.PackageExtra.value)
+        ).outerjoin(
+            model.PackageExtra,
+            (model.Resource.package_id == model.PackageExtra.package_id)
+            & ((model.PackageExtra.key == 'harvest_portal')
+               | (model.PackageExtra.key.is_(None)))
+        ).group_by(model.Resource.format).filter(
+            model.Resource.format != '', model.Resource.state == 'active'
+        )
+        db_formats = db_formats.all()
+
+        format_types = {
+            f: {
+                True: 'Partially external',
+                e == 0: 'Local',
+                t - e == 0: 'External'
+            }[True]
+            for (f, t, e) in db_formats
         }
+        used = set(format_types)
         undefined = used - defined
 
-        extra_vars = {'undefined': undefined, 'defined': defined}
+        extra_vars = {
+            'undefined': undefined,
+            'defined': defined,
+            'format_types': format_types
+        }
         return tk.render('admin/format_mapping.html', extra_vars)
 
     def broken_links(self):
@@ -136,12 +159,14 @@ class NSWController(PackageController):
                     mapped_licenses[license_id] = license_label
                     mapped_licenses = json.dumps(mapped_licenses)
                     model.set_system_info(
-                        'mapped_licenses', str(mapped_licenses))
+                        'mapped_licenses', str(mapped_licenses)
+                    )
                 else:
                     new_licenses = {license_id: license_label}
                     new_licenses = json.dumps(new_licenses)
                     model.set_system_info(
-                        'mapped_licenses', str(new_licenses))
+                        'mapped_licenses', str(new_licenses)
+                    )
 
             return tk.redirect_to('license_mapping')
 

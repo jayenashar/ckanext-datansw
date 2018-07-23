@@ -16,7 +16,12 @@
 	<div class="well">
 	    <ul>
 		{% for fmt in undefined|sort %}
-		<li>{{ fmt }} </li>
+		    <li>
+			{{ fmt }}
+			<span class="label label">
+			    {{ format_types[fmt] }}
+			</span>
+		    </li>
 		{% endfor %}
 	    </ul>
 	</div>
@@ -26,6 +31,10 @@
     {% trans %}
     <p>
 	You can map any of custom formats to anoter one, eiter built-in or custom. For this purpose, please, use the form bellow.
+    </p>
+    <p>
+	<i class="fa fa-info-circle"></i>
+	Resources of syndicated datasets will be overridden on the next syndication from their source data portal. Please consider requesting a change on the source data portal instead of making it on Data.NSW
     </p>
     {% endtrans %}
     <form class="form" method="POST" action="">
@@ -64,9 +73,13 @@
       {{ _('Format mapping') }}
     </h2>
     <div class="module-content">
-        <p>
-	    {{ _('Update mapping') }}
-	</p>
+	<h3>{{ _('Format labels') }}</h3>
+	<dl>
+	    <li><strong>Local:</strong> This format is used only by local datasets</li>
+	    <li><strong>External:</strong> This format is used only by external datasets(obtained from remote data portals)</li>
+	    <li><strong>Partially external:</strong> This format is used by both local and remote datasets</li>
+	</dl>
+
     </div>
   </div>
 {% endblock %}
