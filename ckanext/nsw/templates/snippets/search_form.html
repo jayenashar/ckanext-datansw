@@ -55,7 +55,11 @@
     {% if facets %}
     <p class="filter-list">
         {% for field in facets.fields %}
-        {% set search_facets_items = facets.search.get(field)['items'] %}
+        {% if field == "license_id" %}
+            {% set search_facets_items = h.external_license_label(facets.search.get(field)['items']) %}
+        {% else %}
+            {% set search_facets_items = facets.search.get(field)['items'] %}
+        {% endif %}
         <span class="facet">{{ facets.titles.get(field) }}:</span>
         {% for value in facets.fields[field] %}
             <span class="filtered pill">
