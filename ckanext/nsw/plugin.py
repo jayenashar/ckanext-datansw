@@ -5,6 +5,7 @@ from ckan.common import config, _, c
 import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
+import ckan.lib.helpers as h
 from ckanext.acl.interfaces import IACL
 from ckan.logic.action.get import user_list as ckan_user_list
 import sqlalchemy
@@ -39,12 +40,61 @@ def _add_search_tooltip(original):
             'placeholder': _('Tooltip...')
         })
         return items
+
     return wrapper
 
 
 AdminController._get_config_form_items = _add_search_tooltip(
     AdminController._get_config_form_items
 )
+
+
+def _get_5star_formats():
+    keys = [
+        '5star.structured_format.proprietary',
+        '5star.structured_format.non_proprietary',
+    ]
+    return [set(tk.aslist(config.get(key))) for key in keys]
+
+
+def count_stars(pkg_dict):
+    """Count stars as per https://5stardata.info
+    """
+    register = model.Package.get_license_register()
+    license = register.get(pkg_dict['license_id'])
+    # 1 star for open license
+    if not license or not license.isopen():
+        return 0
+    # pf - proprietary formats
+    # npf - non-proprietary formats
+    pf, npf = _get_5star_formats()
+    formats = {
+        res['format']
+        for res in pkg_dict.setdefault('resources', []) if res.get('format')
+    } | set(pkg_dict.get('res_format', []))
+
+    np_formats = formats & npf
+    # 2 star for structured data
+    if not np_formats:
+        return 2 if pf & formats else 1
+    # take all descriptions into single string to reduce overhead
+    # of regexp search
+    text = '\n'.join([pkg_dict.get('notes')] + pkg_dict.get('res_description', []) + [
+        res['description'] for res in pkg_dict['resources']
+        if res.get('description')
+    ])
+
+    has_links = any(
+        check.search(text)
+        for check in (h.RE_MD_EXTERNAL_LINK, h.RE_MD_INTERNAL_LINK)
+    )
+    # 5 stars for linked data
+    if has_links:
+        return 5
+    # 3 stars for structured data in non-proprietary format
+    # 4 stars for data available via web. That's mean, anything
+    # that has 3 stars, automatically gets fourth star as well.
+    return 4
 
 
 class NSWPlugin(plugins.SingletonPlugin):
@@ -58,12 +108,19 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.ITemplateHelpers)
 
     def update_config_schema(self, schema):
-        schema['ckan.search_tooltip'] = [
-            ignore_missing, unicode
-
-        ]
+        schema['ckan.search_tooltip'] = [ignore_missing, unicode]
 
         return schema
+
+    # IPackageController
+
+    def before_index(self, search_data):
+        search_data['extras_five_star_rating'] = count_stars(search_data)
+        return search_data
+
+    def after_show(self, context, pkg_dict):
+        pkg_dict['five_star_rating'] = count_stars(pkg_dict)
+        return pkg_dict
 
     def after_search(self, search_results, data_dict):
         if 'dctype' in search_results['facets']:
@@ -87,7 +144,7 @@ class NSWPlugin(plugins.SingletonPlugin):
         for result in search_results['results']:
             tracking = model.TrackingSummary.get_for_package(result['id'])
             result['tracking_summary'] = tracking
-
+            result['five_star_rating'] = count_stars(result)
         return search_results
 
     def dataset_facets(self, facets, package_type):
@@ -147,15 +204,9 @@ class NSWPlugin(plugins.SingletonPlugin):
         tk.add_resource('fanstatic', 'ckanext-nsw')
 
         if tk.check_ckan_version(min_version='2.4'):
-            tk.add_ckan_admin_tab(
-                config, 'broken_links_report', 'Reports'
-            )
-            tk.add_ckan_admin_tab(
-                config, 'format_mapping', 'Formats'
-            )
-            tk.add_ckan_admin_tab(
-                config, 'license_mapping', 'Licenses'
-            )
+            tk.add_ckan_admin_tab(config, 'broken_links_report', 'Reports')
+            tk.add_ckan_admin_tab(config, 'format_mapping', 'Formats')
+            tk.add_ckan_admin_tab(config, 'license_mapping', 'Licenses')
 
     # IACL
 
