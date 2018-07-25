@@ -1,4 +1,7 @@
-from ckan.common import config
+from functools import wraps
+from ckan.lib.navl.validators import ignore_missing
+from ckan.controllers.admin import AdminController
+from ckan.common import config, _
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 from ckanext.acl.interfaces import IACL
@@ -22,6 +25,24 @@ def nsw_user_list(context, data_dict):
     return query
 
 
+def _add_search_tooltip(original):
+    @wraps(AdminController._get_config_form_items)
+    def wrapper(*args, **kwargs):
+        items = original(*args, **kwargs)
+        items.append({
+            'name': 'ckan.search_tooltip',
+            'control': 'markdown',
+            'label': _('Tooltip for search sorting'),
+            'placeholder': _('Tooltip...')
+        })
+        return items
+    return wrapper
+
+
+AdminController._get_config_form_items = _add_search_tooltip(
+    AdminController._get_config_form_items
+)
+
 class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes, inherit=True)
@@ -30,6 +51,14 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(IACL)
     plugins.implements(plugins.IActions)
+
+    def update_config_schema(self, schema):
+        schema['ckan.search_tooltip'] = [
+            ignore_missing, unicode
+
+        ]
+
+        return schema
 
     def after_search(self, search_results, data_dict):
         if 'dctype' in search_results['facets']:
