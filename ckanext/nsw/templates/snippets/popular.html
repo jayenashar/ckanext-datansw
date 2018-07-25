@@ -1,0 +1,8 @@
+{# show poular icon #}
+{% if number >= 10 %}
+  {% if title.startswith("{number} recent") %}
+    <span data-toggle="tooltip" data-placement="right" class="popular ckan-icon ckan-icon-flame" title="This dataset gets a lot of attention. {{ title.format(number=number) }}" xmlns="http://www.w3.org/1999/xhtml">{{ _('Popular') }}</span>
+  {% else %} 
+    <span data-toggle="tooltip" data-placement="right" class="popular ckan-icon ckan-icon-flame" title="{{ title.format(number=number) }}" xmlns="http://www.w3.org/1999/xhtml">{{ _('Popular') }}</span>
+  {% endif %}
+{% endif %}

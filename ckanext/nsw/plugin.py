@@ -2,6 +2,7 @@ from functools import wraps
 from ckan.lib.navl.validators import ignore_missing
 from ckan.controllers.admin import AdminController
 from ckan.common import config, _
+import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 from ckanext.acl.interfaces import IACL
@@ -43,6 +44,7 @@ AdminController._get_config_form_items = _add_search_tooltip(
     AdminController._get_config_form_items
 )
 
+
 class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer)
     plugins.implements(plugins.IRoutes, inherit=True)
@@ -78,6 +80,11 @@ class NSWPlugin(plugins.SingletonPlugin):
                 new_facet_dict['count'] = value_
                 restructured_facet['items'].append(new_facet_dict)
             search_results['search_facets']['dctype'] = restructured_facet
+
+        for result in search_results['results']:
+            tracking = model.TrackingSummary.get_for_package(result['id'])
+            result['tracking_summary'] = tracking
+
         return search_results
 
     def dataset_facets(self, facets, package_type):
@@ -93,6 +100,13 @@ class NSWPlugin(plugins.SingletonPlugin):
             '/dataset/summary.csv',
             controller='ckanext.nsw.controller:NSWController',
             action='summarycsv'
+        )
+        map.connect(
+            'format_mapping',
+            '/ckan-admin/format-mapping',
+            controller='ckanext.nsw.controller:NSWController',
+            action='format_mapping',
+            ckan_icon='arrows'
         )
         map.connect(
             'broken_links_report',
@@ -124,7 +138,10 @@ class NSWPlugin(plugins.SingletonPlugin):
 
         if tk.check_ckan_version(min_version='2.4'):
             tk.add_ckan_admin_tab(
-                config, 'broken_links_report', 'Broken Links'
+                config, 'broken_links_report', 'Reports'
+            )
+            tk.add_ckan_admin_tab(
+                config, 'format_mapping', 'Formats'
             )
 
     # IACL
