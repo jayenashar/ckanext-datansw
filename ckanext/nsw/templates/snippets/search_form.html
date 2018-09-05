@@ -4,7 +4,7 @@
 {% set sorting = sorting if sorting else [(_('Name Ascending'), 'name asc'), (_('Name Descending'), 'name desc')] %}
 {% set search_class = search_class if search_class else 'search-giant' %}
 {% set no_bottom_border = no_bottom_border if no_bottom_border else false %}
-
+{% set sorting_tooltip = g.search_tooltip %}
 <form class="search-form{% if no_bottom_border %} no-bottom-border{% endif %}" method="get">
 
     {% block search_input %}
@@ -27,7 +27,12 @@
     {% block search_sortby %}
     {% if sorting %}
     <div class="form-select control-group control-order-by">
-        <label for="field-order-by">{{ _('Order by') }}</label>
+        <label for="field-order-by">
+	    {% if sorting_tooltip %}
+	    <i class="fa fa-info-circle" data-toggle="tooltip" data-html="true" data-placement="bottom" title="{{ h.render_markdown(sorting_tooltip) }}"></i>
+	    {% endif %}
+	    {{ _('Order by') }}
+	</label>
         <select id="field-order-by" name="sort">
             {% for label, value in sorting %}
             {% if label and value %}
