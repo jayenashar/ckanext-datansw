@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+
+{% block primary_content_inner %}
+<div>
+    <h2>{{ _('Format mapping') }}</h2>
+    {% if undefined|length %}
+    {% trans %}
+    <p>
+	We identified some resources with custom format property. You can check them in the list bellow.
+    </p>
+    {% endtrans %}
+    <a class="btn btn-primary" data-toggle="collapse" href="#undefinedFormats">
+	{{ _('Custom formats') }}
+    </a>
+    <div class="collapse" id="undefinedFormats">
+	<div class="well">
+	    <ul>
+		{% for fmt in undefined|sort %}
+		<li>{{ fmt }} </li>
+		{% endfor %}
+	    </ul>
+	</div>
+    </div>
+    <br/>
+
+    {% trans %}
+    <p>
+	You can map any of custom formats to anoter one, eiter built-in or custom. For this purpose, please, use the form bellow.
+    </p>
+    {% endtrans %}
+    <form class="form" method="POST" action="">
+	<div class="form-group">
+	    <input class="form-control" name="from" placeholder="From:" type="text" value=""/>
+	    <input class="form-control" name="to" placeholder="To:" type="text" value=""/>
+	</div>
+	<input name="" type="submit" value="Update" class="btn btn-primary" />
+    </form>
+    <hr/>
+    {% else %}
+    <p class="muted">{{ _('It seems that there is no any custom format in use') }}</p>
+    {% endif %}
+
+    <a class="btn btn-primary" data-toggle="collapse" href="#definedFormats">
+	{{ _('Built-in format list') }}
+    </a>
+    <div class="collapse" id="definedFormats">
+	<div class="well">
+	    <ul>
+		{% for fmt in defined|sort %}
+		<li>{{ fmt }}</li>
+		{% endfor %}
+
+	    </ul>
+	</div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block secondary_content %}
+  <div class="module module-narrow module-shallow">
+    <h2 class="module-heading">
+      <i class="icon-info-sign"></i>
+      {{ _('Format mapping') }}
+    </h2>
+    <div class="module-content">
+        <p>
+	    {{ _('Update mapping') }}
+	</p>
+    </div>
+  </div>
+{% endblock %}

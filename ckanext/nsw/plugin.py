@@ -218,6 +218,13 @@ class NSWPlugin(plugins.SingletonPlugin):
             action='summarycsv'
         )
         map.connect(
+            'format_mapping',
+            '/ckan-admin/format-mapping',
+            controller='ckanext.nsw.controller:NSWController',
+            action='format_mapping',
+            ckan_icon='arrows'
+        )
+        map.connect(
             'broken_links_report',
             '/ckan-admin/report/broken-links',
             controller='ckanext.nsw.controller:NSWController',
@@ -247,7 +254,10 @@ class NSWPlugin(plugins.SingletonPlugin):
 
         if tk.check_ckan_version(min_version='2.4'):
             tk.add_ckan_admin_tab(
-                config, 'broken_links_report', 'Broken Links'
+                config, 'broken_links_report', 'Reports'
+            )
+            tk.add_ckan_admin_tab(
+                config, 'format_mapping', 'Formats'
             )
 
     # IACL
