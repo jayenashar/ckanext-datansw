@@ -1,13 +1,21 @@
+from functools import wraps
+from ckan.lib.navl.validators import ignore_missing
+from ckan.controllers.admin import AdminController
+from ckan.common import config, _, c
+import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
+import ckan.lib.helpers as h
 from ckanext.acl.interfaces import IACL
 from ckan.logic.action.get import user_list as ckan_user_list
 import sqlalchemy
+
 
 import ckan.lib.dictization.model_save as model_save
 import ckan.logic.auth.create as create
 import ckan.authz as authz
 import ckan.logic as logic
+import ckanext.nsw.helpers as helpers
 
 _desc = sqlalchemy.desc
 
@@ -124,8 +132,10 @@ model_save.package_membership_list_save = nsw_package_membership_list_save
 
 
 def related_create(context, data_dict=None):
-    return {'success': False,
-            'msg': 'No one is allowed to create related items'}
+    return {
+        'success': False,
+        'msg': 'No one is allowed to create related items'
+    }
 
 
 def nsw_user_list(context, data_dict):
@@ -133,6 +143,74 @@ def nsw_user_list(context, data_dict):
     query = ckan_user_list(context, data_dict)
     query = query.order_by(None).order_by(_desc(model.User.created))
     return query
+
+
+def _add_search_tooltip(original):
+    @wraps(AdminController._get_config_form_items)
+    def wrapper(*args, **kwargs):
+        items = original(*args, **kwargs)
+        items.append({
+            'name': 'ckan.search_tooltip',
+            'control': 'markdown',
+            'label': _('Tooltip for search sorting'),
+            'placeholder': _('Tooltip...')
+        })
+        return items
+
+    return wrapper
+
+
+AdminController._get_config_form_items = _add_search_tooltip(
+    AdminController._get_config_form_items
+)
+
+
+def _get_5star_formats():
+    keys = [
+        '5star.structured_format.proprietary',
+        '5star.structured_format.non_proprietary',
+    ]
+    return [set(tk.aslist(config.get(key))) for key in keys]
+
+
+def count_stars(pkg_dict):
+    """Count stars as per https://5stardata.info
+    """
+    register = model.Package.get_license_register()
+    license = register.get(pkg_dict['license_id'])
+    # 1 star for open license
+    if not license or not license.isopen():
+        return 0
+    # pf - proprietary formats
+    # npf - non-proprietary formats
+    pf, npf = _get_5star_formats()
+    formats = {
+        res['format']
+        for res in pkg_dict.setdefault('resources', []) if res.get('format')
+    } | set(pkg_dict.get('res_format', []))
+
+    np_formats = formats & npf
+    # 2 star for structured data
+    if not np_formats:
+        return 2 if pf & formats else 1
+    # take all descriptions into single string to reduce overhead
+    # of regexp search
+    text = '\n'.join([pkg_dict.get('notes')] + pkg_dict.get('res_description', []) + [
+        res['description'] for res in pkg_dict['resources']
+        if res.get('description')
+    ])
+
+    has_links = any(
+        check.search(text)
+        for check in (h.RE_MD_EXTERNAL_LINK, h.RE_MD_INTERNAL_LINK)
+    )
+    # 5 stars for linked data
+    if has_links:
+        return 5
+    # 3 stars for structured data in non-proprietary format
+    # 4 stars for data available via web. That's mean, anything
+    # that has 3 stars, automatically gets fourth star as well.
+    return 4
 
 
 class NSWPlugin(plugins.SingletonPlugin):
@@ -143,17 +221,34 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(IACL)
     plugins.implements(plugins.IActions)
+    plugins.implements(plugins.ITemplateHelpers)
+
+    def update_config_schema(self, schema):
+        schema['ckan.search_tooltip'] = [ignore_missing, unicode]
+
+        return schema
+
+    # IPackageController
+
+    def before_index(self, search_data):
+        search_data['extras_five_star_rating'] = count_stars(search_data)
+        return search_data
+
+    def after_show(self, context, pkg_dict):
+        pkg_dict['five_star_rating'] = count_stars(pkg_dict)
+        return pkg_dict
 
     def after_search(self, search_results, data_dict):
         if 'dctype' in search_results['facets']:
             count = 0
             for key in search_results['facets']['dctype']:
                 count = count + search_results['facets']['dctype'][key]
-            search_results['facets']['dctype']['Dataset'] = search_results['facets']['dctype'].get('Dataset',0) + (search_results['count'] - count)
-            restructured_facet = {
-                'title': 'dctype',
-                'items': []
-            }
+            search_results['facets'][
+                'dctype'
+            ]['Dataset'] = search_results['facets']['dctype'].get(
+                'Dataset', 0
+            ) + (search_results['count'] - count)
+            restructured_facet = {'title': 'dctype', 'items': []}
             for key_, value_ in search_results['facets']['dctype'].items():
                 new_facet_dict = {}
                 new_facet_dict['name'] = key_
@@ -161,6 +256,11 @@ class NSWPlugin(plugins.SingletonPlugin):
                 new_facet_dict['count'] = value_
                 restructured_facet['items'].append(new_facet_dict)
             search_results['search_facets']['dctype'] = restructured_facet
+
+        for result in search_results['results']:
+            tracking = model.TrackingSummary.get_for_package(result['id'])
+            result['tracking_summary'] = tracking
+            result['five_star_rating'] = count_stars(result)
         return search_results
 
     def dataset_facets(self, facets, package_type):
@@ -172,12 +272,41 @@ class NSWPlugin(plugins.SingletonPlugin):
         return {'related_create': related_create}
 
     def before_map(self, map):
-        map.connect('/dataset/summary.csv',
-                    controller='ckanext.nsw.controller:NSWController',
-                    action='summarycsv')
+        map.connect(
+            '/dataset/summary.csv',
+            controller='ckanext.nsw.controller:NSWController',
+            action='summarycsv'
+        )
+        map.connect(
+            'format_mapping',
+            '/ckan-admin/format-mapping',
+            controller='ckanext.nsw.controller:NSWController',
+            action='format_mapping',
+            ckan_icon='arrows'
+        )
+        map.connect(
+            'broken_links_report',
+            '/ckan-admin/report/broken-links',
+            controller='ckanext.nsw.controller:NSWController',
+            action='broken_links',
+            ckan_icon='link'
+        )
+        map.connect(
+            'license_mapping',
+            '/ckan-admin/license-mapping',
+            controller='ckanext.nsw.controller:NSWController',
+            action='license_mapping',
+            ckan_icon='file-text'
+        )
         return map
 
     def update_config(self, config):
+        conf_directive = 'nsw.report.broken_links_filepath'
+        if not config.get(conf_directive):
+            raise KeyError(
+                'Please, specify `{}` inside your config file'.
+                format(conf_directive)
+            )
 
         # Add this plugin's templates dir to CKAN's extra_template_paths, so
         # that CKAN will use this plugin's custom templates.
@@ -190,6 +319,11 @@ class NSWPlugin(plugins.SingletonPlugin):
         # Add this plugin's fanstatic dir.
         tk.add_resource('fanstatic', 'ckanext-nsw')
 
+        if tk.check_ckan_version(min_version='2.4'):
+            tk.add_ckan_admin_tab(config, 'broken_links_report', 'Reports')
+            tk.add_ckan_admin_tab(config, 'format_mapping', 'Formats')
+            tk.add_ckan_admin_tab(config, 'license_mapping', 'Licenses')
+
     # IACL
 
     def update_permission_list(self, perms):
@@ -198,6 +332,9 @@ class NSWPlugin(plugins.SingletonPlugin):
     # IActions
 
     def get_actions(self):
-        return {
-            'user_list': nsw_user_list
-        }
+        return {'user_list': nsw_user_list}
+
+    # ITemplateHelpers
+
+    def get_helpers(self):
+        return helpers.get_helpers()
