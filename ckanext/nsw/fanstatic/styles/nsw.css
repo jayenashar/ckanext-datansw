@@ -912,3 +912,10 @@ a.skip-link:focus {
 .dataset-heading .tooltip {
   max-width: 200px;
 }
+.primary .module-content.page-header {
+  padding: 0 10px;
+}
+.primary .module-content.page-header .nav-tabs > li > a {
+  padding-right: 10px;
+  padding-left: 10px;
+}

@@ -1,12 +1,13 @@
 from functools import wraps
 from ckan.lib.navl.validators import ignore_missing
 from ckan.controllers.admin import AdminController
-from ckan.common import config, _
+from ckan.common import config, _, c
 import ckan.model as model
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as tk
 from ckanext.acl.interfaces import IACL
 from ckan.logic.action.get import user_list as ckan_user_list
+import ckanext.nsw.helpers as helpers
 import sqlalchemy
 
 import ckan.lib.dictization.model_save as model_save
@@ -169,6 +170,7 @@ class NSWPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(IACL)
     plugins.implements(plugins.IActions)
+    plugins.implements(plugins.ITemplateHelpers)
 
     def update_config_schema(self, schema):
         schema['ckan.search_tooltip'] = [
@@ -231,6 +233,13 @@ class NSWPlugin(plugins.SingletonPlugin):
             action='broken_links',
             ckan_icon='link'
         )
+        map.connect(
+            'license_mapping',
+            '/ckan-admin/license-mapping',
+            controller='ckanext.nsw.controller:NSWController',
+            action='license_mapping',
+            ckan_icon='file-text'
+        )
         return map
 
     def update_config(self, config):
@@ -259,6 +268,9 @@ class NSWPlugin(plugins.SingletonPlugin):
             tk.add_ckan_admin_tab(
                 config, 'format_mapping', 'Formats'
             )
+            tk.add_ckan_admin_tab(
+                config, 'license_mapping', 'Licenses'
+            )
 
     # IACL
 
@@ -269,3 +281,8 @@ class NSWPlugin(plugins.SingletonPlugin):
 
     def get_actions(self):
         return {'user_list': nsw_user_list}
+
+    # ITemplateHelpers
+
+    def get_helpers(self):
+        return helpers.get_helpers()
