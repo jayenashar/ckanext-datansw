@@ -2,7 +2,7 @@
 
 {% set placeholder = placeholder if placeholder else _('Search datasets') %}
 {% set sorting = sorting if sorting else [(_('Name Ascending'), 'name asc'), (_('Name Descending'), 'name desc')] %}
-{% do sorting.append((_('Rating'), 'extras_five_star_rating desc')) %}
+{#% do sorting.append((_('Rating'), 'extras_five_star_rating desc')) %#}
 {% set search_class = search_class if search_class else 'search-giant' %}
 {% set no_bottom_border = no_bottom_border if no_bottom_border else false %}
 {% set sorting_tooltip = g.search_tooltip %}
