@@ -19,7 +19,7 @@
 	    {% endblock %}
 
 	    {% block page_pagination_top %}
-		<div class='pagiantion-top'>
+		<div class='pagiantion-top' data-count="{{ c.page.item_count }}">
 		    {{ c.page.pager(q=c.q) }}
 		</div>
 	    {% endblock %}
