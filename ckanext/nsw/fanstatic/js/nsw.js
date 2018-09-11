@@ -105,6 +105,10 @@ function gazSearch(gazURL) {
   }
 }
 
+function initTooltips() {
+  $('[data-toggle="tooltip"]').tooltip();
+}
+
 window.onload = function () {
   addAltToAvatar();
   addTextToI();
@@ -114,7 +118,7 @@ window.onload = function () {
   correctNums();
   navigationInH3();
   viewErrorHide();
-
+  initTooltips();
 
   $("#field-spatial_coverage").change(function (e) {
     gazURL = e.target.value;
@@ -149,4 +153,55 @@ window.onload = function () {
   if (typeof rssfeedsetup !== "undefined") {
     rssfeedsetup();
   }
+}
+
+function searchToObject(search_str) {
+  var pairs = search_str.substring(1).split('&'),
+      obj = {};
+  for ( i in pairs ) {
+    if ( pairs[i] === "" ) continue;
+    pair = pairs[i].split("=");
+    obj[ decodeURIComponent( pair[0] ) ] = decodeURIComponent( pair[1] );
+  };
+  return obj
+}
+
+function objectToSearch(params) {
+  var arr = [],
+      str = '?';
+  for ( i in params ) {
+    arr.push(i+'='+params[i]);
+  };
+  str += arr.join('&');
+  return str
+}
+
+var data_count = $('.pagiantion-top').attr('data-count');
+var pages_count = Math.ceil(data_count / 20);
+if (pages_count > 10) {
+  $('.pagination').append(
+    `<div class='pagination-go-to'>
+    Go to page
+    <input type='text'>
+    <button>Go</button>
+    </div>`
+  );
+
+  var params = searchToObject(window.location.search);
+
+  $('.pagination-go-to button').on('click', function() {
+    var page = $(this).prev()[0].value;
+    if (page) {
+      params['page'] = page;
+      window.location.replace(objectToSearch(params));
+    };
+  });
+
+  $('.pagination-go-to input[type="text"]').keydown(function(e){
+    var keyCode = (e.keyCode ? e.keyCode : e.which);
+    if (keyCode == 13 && this.value) {
+      params['page'] = this.value;
+      window.location.replace(objectToSearch(params));
+    };
+  });
 }
