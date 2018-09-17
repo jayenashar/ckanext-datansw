@@ -95,23 +95,29 @@ class NSWCommand(CkanCommand):
         model.Session.commit()
         print('Done')
 
-
     def _drop_oeh(self):
         def _drop_datasets(q):
-            packages = toolkit.get_action('package_search')(None, {
-                'fq': q,
-                'rows': 100
-            })
+            packages = toolkit.get_action('package_search')(
+                None, {
+                    'fq': q,
+                    'rows': 100
+                }
+            )
             i = 0
             for i, dataset in enumerate(packages['results'], 1):
-                print('[{}/{}] Purge {}'.format(i + removed_count, total,
-                                                dataset['name']))
+                print(
+                    '[{}/{}] Purge {}'.format(
+                        i + removed_count, total, dataset['name']
+                    )
+                )
                 pkg = model.Package.get(dataset['id'])
                 try:
-                    model.Session.query(model.PackageExtraRevision).filter_by(
-                        package_id=dataset['id']).delete()
-                    model.Session.query(model.PackageExtra).filter_by(
-                        package_id=dataset['id']).delete()
+                    model.Session.query(
+                        model.PackageExtraRevision
+                    ).filter_by(package_id=dataset['id']).delete()
+                    model.Session.query(
+                        model.PackageExtra
+                    ).filter_by(package_id=dataset['id']).delete()
                     pkg.purge()
                     model.Session.commit()
                 except Exception as e:
@@ -126,10 +132,12 @@ class NSWCommand(CkanCommand):
         q = 'organization:office-of-environment-and-heritage-oeh'
         if id_:
             q += ' AND (id:{0} OR name:{0})'.format(id_)
-        packages = toolkit.get_action('package_search')(None, {
-            'fq': q,
-            'rows': 0
-        })
+        packages = toolkit.get_action('package_search')(
+            None, {
+                'fq': q,
+                'rows': 0
+            }
+        )
         total = packages['count']
         removed_count = 0
         print('Found {} datasets. Purging...'.format(total))
@@ -138,7 +146,8 @@ class NSWCommand(CkanCommand):
             if removed_count:
                 print(
                     'Already removed {} datasets. Fetching next portion'.
-                    format(removed_count))
+                    format(removed_count)
+                )
             removed_count += _drop_datasets(q)
             if removed_count >= total:
                 break
@@ -153,14 +162,25 @@ class NSWCommand(CkanCommand):
         for pkg in q:
             if pkg.extras.get('harvest_url'):
                 continue
-            writer.writerow([pkg.title.encode('utf8'), h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
+            writer.writerow([
+                pkg.title.encode('utf8'),
+                h.url_for('dataset_read', id=pkg.name, qualified=True),
+                pkg.maintainer_email
+            ])
 
         print('Report: {}'.format(output.name))
 
     def _broken_links_report(self):
         broken_count = 0
-        resources = model.Session.query(model.Resource
-                                        ).filter_by(state='active')
+        resources = model.Session.query(model.Resource).join(
+            model.Package, model.Package.id == model.Resource.package_id
+        ).outerjoin(
+            model.PackageExtra,
+            (model.Package.id == model.PackageExtra.package_id) &
+            (model.PackageExtra.key == 'harvest_url')
+        ).filter(
+            model.Resource.state == 'active', model.PackageExtra.key.is_(None)
+        )
         total = resources.count()
         file = open(config['nsw.report.broken_links_filepath'], 'wb')
         report = csv.writer(file)
@@ -169,19 +189,16 @@ class NSWCommand(CkanCommand):
             print '\rProcessing {} of {}. Broken links: {}'.format(
                 i, total, broken_count
             ),
+
             sys.stdout.flush()
-            page = h.url_for(
-                controller='package',
-                action='resource_read',
-                id=res.package_id,
-                resource_id=res.id,
-                qualified=True
-            )
             try:
                 resp = requests.head(res.url, timeout=5)
                 if resp.ok:
                     continue
                 code, reason = resp.status_code, resp.reason
+                # it's likely incorrect request to service endpoint
+                if 400 == code:
+                    continue
             except (exc.ConnectTimeout, exc.ReadTimeout):
                 code, reason = 504, 'Request timeout'
             except exc.ConnectionError:
@@ -191,6 +208,13 @@ class NSWCommand(CkanCommand):
             except exc.InvalidURL:
                 code, reason = 520, 'Invalid URL'
 
+            page = h.url_for(
+                controller='package',
+                action='resource_read',
+                id=res.package_id,
+                resource_id=res.id,
+                qualified=True
+            )
             report.writerow([page, res.url, code, reason])
             broken_count += 1
         file.close()
