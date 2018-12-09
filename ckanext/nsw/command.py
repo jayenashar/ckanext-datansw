@@ -49,12 +49,14 @@ class NSWCommand(CkanCommand):
             print self.usage
         elif self.args[0] == 'dropuser':
             self._drop_user(self.args[1])
-	elif self.args[0] == 'drop-oeh':
+        elif self.args[0] == 'drop-oeh':
             self._drop_oeh()
         elif self.args[0] == 'maintainer-report':
             self._maintainer_report()
         elif self.args[0] == 'broken-links-report':
             self._broken_links_report()
+        elif self.args[0] == 'sso-user-reset-notification':
+            self._sso_user_reset_notification()
         else:
             print self.usage
 
@@ -192,3 +194,42 @@ class NSWCommand(CkanCommand):
             report.writerow([page, res.url, code, reason])
             broken_count += 1
         file.close()
+
+    def _sso_user_reset_notification(self):
+        import ckan.lib.mailer as mailer
+        from ckanext.saml2.model.saml2_user import SAML2User
+        saml2_users = model.Session.query(SAML2User.id).all()
+        if len(self.args) > 1:
+            users = model.Session.query(model.User)\
+               .filter(model.User.name == self.args[1])\
+               .filter(model.User.id.in_(saml2_users)).limit(1).all()
+        else:
+            users = model.Session.query(model.User)\
+                .filter(model.User.id.in_(saml2_users))\
+                .all()
+        for user in users:
+            if user:
+                print('*' * 100)
+                mailer.create_reset_key(user)
+                reset_link = mailer.get_reset_link(user)
+                subject = 'Data.NSW & IAR ID Hub decommissioning'
+                msg = ('Hi {0},\n\n'
+
+                'On the 6th of February, ID Hub will be decommissioned and will no longer be available as an identity provider for Data.NSW & IAR. CKAN login will be used instead.\n\n'
+
+                'Therefore it is very important to reset your password and test the login functionality asap to keep the access to Data.NSW & IAR.\n\n'
+
+                'To reset your password please visit: {1} \n\n'
+
+                'Please report any issues with your login to Benjamin Harland-Cox (ben.harland-Cox@finance.nsw.gov.au).\n\n'
+
+                'Kind Regards,\n'
+                'Data.NSW team').format(user.name, reset_link)
+                if user.email:
+                    mailer.mail_recipient(user.name, user.email, subject, msg)
+                    log.info("User pass reset email should be sent to {0} user.".format(user.name))
+                    print("User pass reset email should be sent to {0} user.".format(user.name))
+                else:
+                    log.error("User {0} don't have email".format(user.name))
+                    print("User {0} don't have email".format(user.name))
+                print('*' * 100)
