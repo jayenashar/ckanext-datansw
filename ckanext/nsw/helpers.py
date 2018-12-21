@@ -26,15 +26,22 @@ def external_license_label(items):
 
 def check_liked(id):
     # c.author is an old property need to clarify with CKAN team
-    user = c.user if c.user else c.author
-    q = model.Session.query(EntityLikes) \
-        .filter(EntityLikes.entity_id == id) \
-        .filter(EntityLikes.user == user) \
-        .first()
-    if q:
-        return q
+    if not c.user:
+        user = c.author
     else:
-        return None
+        user = model.User.get(c.user)
+        if user:
+            user = user.id
+    if user:
+        q = model.Session.query(EntityLikes) \
+            .filter(EntityLikes.entity_id == id) \
+            .filter(EntityLikes.user == user) \
+            .first()
+        if q:
+            return q
+        else:
+            return None
+    return None
 
 
 def get_liked_count(id):

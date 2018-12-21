@@ -27,12 +27,14 @@ ckan.module('nsw_likes', function($, _) {
         _onResponse: function(json) {
             var result = json.result;
             var el = $(this.el);
-            if(result.liked_flag) {
-                el.removeClass('like-button').addClass('unlike-button').attr("title", "You like it").html('<i class="fa fa-thumbs-up" aria-hidden="true"></i>');
-            } else {
-                el.removeClass('unlike-button').addClass('like-button').attr("title", "Like").html('<i class="fa fa-thumbs-o-up" aria-hidden="true"></i>');
+            if (result.success) {
+                if(result.liked_flag) {
+                    el.removeClass('like-button').addClass('unlike-button').attr("title", "You like it").html('<i class="fa fa-thumbs-up" aria-hidden="true"></i>');
+                } else {
+                    el.removeClass('unlike-button').addClass('like-button').attr("title", "Like").html('<i class="fa fa-thumbs-o-up" aria-hidden="true"></i>');
+                };
+                $(this.el).parent().find('#likes-count').text(result.count);
             };
-            $(this.el).parent().find('#likes-count').text(result.count);
         },
     };
 });
