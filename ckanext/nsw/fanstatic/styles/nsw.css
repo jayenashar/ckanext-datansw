@@ -791,7 +791,7 @@ a.skip-link:focus {
   color: white;
   background: #BF1722;
   outline: 0;
-  transition: background 0.5s, color 0.5s;
+  transition: background .5s, color .5s;
 }
 .pagination ul > .active > a,
 .pagination ul > .active > span {
@@ -919,4 +919,41 @@ a.skip-link:focus {
 .primary .module-content.page-header .nav-tabs > li > a {
   padding-right: 10px;
   padding-left: 10px;
+}
+#likes-section {
+  float: left;
+}
+#likes-section .likes-inline {
+  border-radius: 3px;
+  border: 1px solid #023a78;
+}
+#likes-section .like-button {
+  color: #023a78;
+}
+#likes-section .unlike-button {
+  color: #023a78;
+}
+#likes-section .likes-btn {
+  border: none;
+  background: transparent;
+  width: 30px;
+  text-align: center;
+  padding: 0 0 0 3px;
+}
+#likes-section .likes-btn:hover,
+#likes-section .likes-btn:focus {
+  outline: none;
+  outline-style: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+#likes-section #likes-count {
+  border-left: 1px solid #023a78;
+  padding: 2px 10px;
+  display: inline-block;
+  vertical-align: middle;
+  font-weight: bold;
+  text-align: center;
+  color: #023a78;
+  line-height: 19px;
 }
