@@ -20,34 +20,43 @@ def get_actions():
 
 def handle_likes(context, data_dict):
 	# c.author is an old property need to clarify with CKAN team
-	user = c.user if c.user else c.author
+	if not c.user:
+		user = c.author
+	else:
+		user = model.User.get(c.user)
+		if user:
+			user = user.id
+
 	entity_id = data_dict.get('entity_id')
 	entity_name = data_dict.get('entity_name')
 	entity_type = data_dict.get('entity_type')
 	liked = nsw_helper.check_liked(entity_id)
 	liked_flag = False
-	if liked:
-		model.Session.query(EntityLikes)\
-			.filter(EntityLikes.entity_id == entity_id)\
-			.filter(EntityLikes.user == user).delete()
-	else:
-		id = str(uuid.uuid4())
-		data = {
-			'id': id,
-			'user': user,
-			'entity_id': entity_id,
-			'entity_name': entity_name,
-			'entity_type': entity_type,
-		}
-		dt = EntityLikes(**data)
-		model.Session.add(dt)
-		liked_flag = True
 
-	model.Session.commit()
+	if user:
+		if liked:
+			model.Session.query(EntityLikes)\
+				.filter(EntityLikes.entity_id == entity_id)\
+				.filter(EntityLikes.user == user).delete()
+		else:
+			id = str(uuid.uuid4())
+			data = {
+				'id': id,
+				'user': user,
+				'entity_id': entity_id,
+				'entity_name': entity_name,
+				'entity_type': entity_type,
+			}
+			dt = EntityLikes(**data)
+			model.Session.add(dt)
+			liked_flag = True
 
-	count = nsw_helper.get_liked_count(entity_id)
+		model.Session.commit()
 
-	return {
-		'success': True,
-		'liked_flag': liked_flag,
-		'count': count}
+		count = nsw_helper.get_liked_count(entity_id)
+
+		return {
+			'success': True,
+			'liked_flag': liked_flag,
+			'count': count}
+	return {'success': False}
