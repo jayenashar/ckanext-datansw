@@ -15,6 +15,7 @@ import ckan.lib.dictization.model_save as model_save
 import ckan.logic.auth.create as create
 import ckan.authz as authz
 import ckan.logic as logic
+import ckanext.nsw.actions as nsw_action
 
 _desc = sqlalchemy.desc
 
@@ -331,7 +332,9 @@ class NSWPlugin(plugins.SingletonPlugin):
     # IActions
 
     def get_actions(self):
-        return {'user_list': nsw_user_list}
+        actions = nsw_action.get_actions()
+        actions.update({'user_list': nsw_user_list})
+        return actions
 
     # ITemplateHelpers
 

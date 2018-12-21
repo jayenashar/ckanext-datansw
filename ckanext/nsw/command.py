@@ -15,6 +15,8 @@ import ckan.lib.helpers as h
 from ckan.common import config
 import requests.exceptions as exc
 
+import ckanext.nsw.model.model as nsw_model
+
 log = logging.getLogger(__name__)
 
 
@@ -55,6 +57,12 @@ class NSWCommand(CkanCommand):
             self._maintainer_report()
         elif self.args[0] == 'broken-links-report':
             self._broken_links_report()
+        elif self.args[0] == 'init':
+            self._init()
+        elif self.args[0] == 'drop':
+            self._drop()
+        elif self.args[0] == 'create':
+            self._create()
         else:
             print self.usage
 
@@ -192,3 +200,16 @@ class NSWCommand(CkanCommand):
             report.writerow([page, res.url, code, reason])
             broken_count += 1
         file.close()
+
+    def _init(self):
+        self._drop()
+        self._create()
+        log.info("DB tables are reinitialized")
+
+    def _drop(self):
+        nsw_model.drop_tables()
+        log.info("DB tables are removed")
+
+    def _create(self):
+        nsw_model.create_tables()
+        log.info("DB tables are setup")
