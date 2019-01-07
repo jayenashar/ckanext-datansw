@@ -957,3 +957,18 @@ a.skip-link:focus {
   color: #023a78;
   line-height: 19px;
 }
+.dataset-item {
+  overflow: hidden;
+}
+.dataset-item #likes-section {
+  float: none;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.dataset-item #likes-section .likes-btn i {
+  font-size: 12px;
+  line-height: 20px;
+}
+.dataset-item #likes-section #likes-count {
+  line-height: 18px;
+}
