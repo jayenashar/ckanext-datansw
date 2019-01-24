@@ -213,18 +213,23 @@ class NSWCommand(CkanCommand):
                 mailer.create_reset_key(user)
                 reset_link = mailer.get_reset_link(user)
                 subject = 'Data.NSW & IAR ID Hub decommissioning'
-                msg = ('Hi {0},\n\n'
+                msg = ('Dear {0},\n\n'
 
-                'On the 6th of February, ID Hub will be decommissioned and will no longer be available as an identity provider for Data.NSW & IAR. CKAN login will be used instead.\n\n'
+                'We need to change the login process for Data NSW. On 6 February 2019, the NSW Identity Hub service will no longer be available as an identity provider for Data NSW. We therefore need to transition to a CKAN-based login process.\n\n'
 
-                'Therefore it is very important to reset your password and test the login functionality asap to keep the access to Data.NSW & IAR.\n\n'
+                'In order to maintain your access to Data NSW and the Information Access Register, you will need to reset your password to login to Data NSW.\n\n'
 
-                'To reset your password please visit: {1} \n\n'
+                'To reset your password, as soon as possible please visit: {1} \n\n'
 
-                'Please report any issues with your login to Benjamin Harland-Cox (ben.harland-Cox@finance.nsw.gov.au).\n\n'
+                'Once your password is reset, you will be able to use this new password and the login functionality on the Data NSW homepage to access your datasets. Please note, your Data NSW user name is used in the salutation of this message.\n\n'
+
+                'From 6 February you will no longer be able to use the NSW Identity Hub to access Data NSW.\n\n'
+
+                'If you have any questions or concerns about these changes, please contact the Information and Data Policy team at the Department of Finance, Services and Innovation at datansw@finance.nsw.gov.au\n\n'
 
                 'Kind Regards,\n'
-                'Data.NSW team').format(user.name, reset_link)
+                'The Data NSW team\n'
+                'Department Finance, Services and Innovation').format(user.name, reset_link)
                 if user.email:
                     mailer.mail_recipient(user.name, user.email, subject, msg)
                     log.info("User pass reset email should be sent to {0} user.".format(user.name))
