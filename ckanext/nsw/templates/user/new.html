@@ -1,0 +1,11 @@
+{% ckan_extends %}
+
+{% block primary_content_inner %}
+	<h1 class="page-heading">
+		{% block page_heading %}{{ _('Register for an Admin Account') }}{% endblock %}
+	</h1>
+	<p>
+		All the data on Data.NSW can be accessed without logging in.
+	</p>
+	{{ c.form | safe }}
+{% endblock %}
