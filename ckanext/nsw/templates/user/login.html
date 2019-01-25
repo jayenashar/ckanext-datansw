@@ -4,18 +4,18 @@
 {% block subtitle %}{{ _('Administrator Login') }}{% endblock %}
 
 {% block breadcrumb_content %}
-  <li class="active">{{ h.nav_link(_('Administrator Login'), named_route='user.login') }}</li>
+  <li class="active">{{ h.nav_link(_('Administrator Login'), controller='user', action='login') }}</li>
 {% endblock %}
 
 {% block primary_content %}
   <section class="module">
     <div class="module-content">
-    	<h1>NSW Government</h1>
-    	<p>All the data on Data.NSW can be accessed without logging in.</p>
-      	<h2 class="page-heading">{% block page_heading %}{{ _('Administrator Login') }}{% endblock %}</h2>
-      	{% block form %}
-        	{% snippet "user/snippets/login_form.html", action=g.login_handler, error_summary=error_summary %}
-      	{% endblock %}
+      <h1>NSW Government</h1>
+      <p>All the data on Data.NSW can be accessed without logging in.</p>
+      <h2 class="page-heading">{% block page_heading %}{{ _('Administrator Login') }}{% endblock %}</h2>
+      {% block form %}
+        {% snippet "user/snippets/login_form.html", action=c.login_handler, error_summary=error_summary %}
+      {% endblock %}
     </div>
   </section>
 {% endblock %}
