@@ -49,12 +49,14 @@ class NSWCommand(CkanCommand):
             print self.usage
         elif self.args[0] == 'dropuser':
             self._drop_user(self.args[1])
-	elif self.args[0] == 'drop-oeh':
+        elif self.args[0] == 'drop-oeh':
             self._drop_oeh()
         elif self.args[0] == 'maintainer-report':
             self._maintainer_report()
         elif self.args[0] == 'broken-links-report':
             self._broken_links_report()
+        elif self.args[0] == 'sso-user-reset-notification':
+            self._sso_user_reset_notification()
         else:
             print self.usage
 
@@ -192,3 +194,47 @@ class NSWCommand(CkanCommand):
             report.writerow([page, res.url, code, reason])
             broken_count += 1
         file.close()
+
+    def _sso_user_reset_notification(self):
+        import ckan.lib.mailer as mailer
+        from ckanext.saml2.model.saml2_user import SAML2User
+        saml2_users = model.Session.query(SAML2User.id).all()
+        if len(self.args) > 1:
+            users = model.Session.query(model.User)\
+               .filter(model.User.name == self.args[1])\
+               .filter(model.User.id.in_(saml2_users)).limit(1).all()
+        else:
+            users = model.Session.query(model.User)\
+                .filter(model.User.id.in_(saml2_users))\
+                .all()
+        for user in users:
+            if user:
+                print('*' * 100)
+                mailer.create_reset_key(user)
+                reset_link = mailer.get_reset_link(user)
+                subject = 'Data.NSW & IAR ID Hub decommissioning'
+                msg = ('Dear {0},\n\n'
+
+                'The Department of Finance, Services and Innovation has been making a range of improvements to Data NSW and as part of that roadmap, we are making changes to the login process.\n\n'
+
+                'In order to maintain your access to Data NSW and the Information Access Register, you will need to reset your password to login to Data NSW.\n\n'
+
+                'To reset your password, as soon as possible please visit: {1} \n\n'
+
+                'Once your password is reset, you will be able to use this new password and the login functionality on the Data NSW homepage to access your datasets. Please note, your Data NSW user name is used in the salutation of this message.\n\n'
+
+                'To continue to access Data NSW to administer your agency\'s datasets, please make these login changes by 6 February.\n\n'
+
+                'If you have any questions or concerns about these changes, please contact the Information and Data Policy team at the Department of Finance, Services and Innovation at datansw@finance.nsw.gov.au\n\n'
+
+                'Kind Regards,\n'
+                'The Data NSW team\n'
+                'Department Finance, Services and Innovation').format(user.name, reset_link)
+                if user.email:
+                    mailer.mail_recipient(user.name, user.email, subject, msg)
+                    log.info("User pass reset email should be sent to {0} user.".format(user.name))
+                    print("User pass reset email should be sent to {0} user.".format(user.name))
+                else:
+                    log.error("User {0} don't have email".format(user.name))
+                    print("User {0} don't have email".format(user.name))
+                print('*' * 100)
