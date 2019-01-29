@@ -215,7 +215,7 @@ class NSWCommand(CkanCommand):
                 subject = 'Data.NSW & IAR ID Hub decommissioning'
                 msg = ('Dear {0},\n\n'
 
-                'We need to change the login process for Data NSW. On 6 February 2019, the NSW Identity Hub service will no longer be available as an identity provider for Data NSW. We therefore need to transition to a CKAN-based login process.\n\n'
+                'The Department of Finance, Services and Innovation has been making a range of improvements to Data NSW and as part of that roadmap, we are making changes to the login process.\n\n'
 
                 'In order to maintain your access to Data NSW and the Information Access Register, you will need to reset your password to login to Data NSW.\n\n'
 
@@ -223,7 +223,7 @@ class NSWCommand(CkanCommand):
 
                 'Once your password is reset, you will be able to use this new password and the login functionality on the Data NSW homepage to access your datasets. Please note, your Data NSW user name is used in the salutation of this message.\n\n'
 
-                'From 6 February you will no longer be able to use the NSW Identity Hub to access Data NSW.\n\n'
+                'To continue to access Data NSW to administer your agency\'s datasets, please make these login changes by 6 February.\n\n'
 
                 'If you have any questions or concerns about these changes, please contact the Information and Data Policy team at the Department of Finance, Services and Innovation at datansw@finance.nsw.gov.au\n\n'
 
