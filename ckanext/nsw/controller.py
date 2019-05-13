@@ -24,7 +24,7 @@ def set_attachment(response, filename):
                      ] = "attachment; filename=" + filename
 
 
-def get_key(self, container, key, default=''):
+def get_key(container, key, default=''):
     return container.get(key) or default
 
 
