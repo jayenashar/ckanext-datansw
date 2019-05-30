@@ -215,7 +215,8 @@ class NSWCommand(CkanCommand):
                 resource_id=res.id,
                 qualified=True
             )
-            report.writerow([page, res.url, code, reason])
+
+            report.writerow([page, res.url.encode('utf-8'), code, reason])
             broken_count += 1
         file.close()
 
