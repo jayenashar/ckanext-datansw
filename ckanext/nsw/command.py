@@ -198,6 +198,7 @@ class NSWCommand(CkanCommand):
     def _sso_user_reset_notification(self):
         import ckan.lib.mailer as mailer
         from ckanext.saml2.model.saml2_user import SAML2User
+        import time
         saml2_users = model.Session.query(SAML2User.id).all()
         if len(self.args) > 1:
             users = model.Session.query(model.User)\
@@ -208,10 +209,12 @@ class NSWCommand(CkanCommand):
                 .filter(model.User.id.in_(saml2_users))\
                 .all()
         for user in users:
+            time.sleep(4)
             if user:
                 print('*' * 100)
                 mailer.create_reset_key(user)
                 reset_link = mailer.get_reset_link(user)
+                extra_link = h.url_for('/user/reset', qualified=True)
                 subject = 'Data.NSW & IAR ID Hub decommissioning'
                 msg = ('Dear {0},\n\n'
 
@@ -221,6 +224,8 @@ class NSWCommand(CkanCommand):
 
                 'To reset your password, as soon as possible please visit: {1} \n\n'
 
+                'If the link above doesn\'t work, please visit {2} and reset your password manually using the following username: {3} \n\n'
+
                 'Once your password is reset, you will be able to use this new password and the login functionality on the Data NSW homepage to access your datasets. Please note, your Data NSW user name is used in the salutation of this message.\n\n'
 
                 'To continue to access Data NSW to administer your agency\'s datasets, please make these login changes by 6 February.\n\n'
@@ -229,7 +234,7 @@ class NSWCommand(CkanCommand):
 
                 'Kind Regards,\n'
                 'The Data NSW team\n'
-                'Department Finance, Services and Innovation').format(user.name, reset_link)
+                'Department Finance, Services and Innovation').format(user.name, reset_link, extra_link, user.name)
                 if user.email:
                     mailer.mail_recipient(user.name, user.email, subject, msg)
                     log.info("User pass reset email should be sent to {0} user.".format(user.name))
