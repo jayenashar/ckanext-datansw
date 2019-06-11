@@ -1,0 +1,35 @@
+<footer class="au-grid au-footer au-body au-body--dark" role="contentinfo">
+  <div class="container">
+    <div class="footer-wrapper">
+      <div class="footer-nav-wrapper">
+        <nav role="navigation" aria-labelledby="block-datansw-footer-menu" id="block-datansw-footer">
+          <ul class="menu au-link-list">
+            {% block footer_links %}
+              <li><a href="/contact">Contact us</a><span class="ext" aria-label="(link is external)"></span></li>
+              <li><a href="/accessibility">Accessibility</a><span class="ext" aria-label="(link is external)"></span></li>
+              <li><a href="/copyright">Copyright</a><span class="ext" aria-label="(link is external)"></span></li>
+              <li><a href="http://www.finance.nsw.gov.au/disclaimer">Disclaimer</a><span class="ext" aria-label="(link is external)"></span></li>
+              <li><a href="/privacy">Privacy</a><span class="ext" aria-label="(link is external)"></span></li>
+              <li><a href="http://digital.nsw.gov.au/sources">Content sources</a><span class="ext" aria-label="(link is external)"></span></li>
+              <li><a href="http://ckan.org">CKAN</a><span class="ext" aria-label="(link is external)"></span></li>
+            {% endblock %}
+          </ul>
+        </nav>
+      </div>
+      <div class="logo-and-site-name-wrapper">
+        <a class="site-branding__logo" href="/">
+          <img alt="" src="{{ h.url_for_static('/images/logo.svg') }}"/>
+          <h5>Data.NSW</h5>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="to-top show">
+    <svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class=""><path fill="currentColor" d="M4.5 413.5l211-211.1c4.7-4.7 12.3-4.7 17 0l211 211.1c4.7 4.7 4.7 12.3 0 17l-7.1 7.1c-4.7 4.7-12.3 4.7-17 0L224 242.1 28.5 437.5c-4.7 4.7-12.3 4.7-17 0l-7.1-7.1c-4.6-4.6-4.6-12.2.1-16.9zm0-111l7.1 7.1c4.7 4.7 12.3 4.7 17 0L224 114.1l195.5 195.5c4.7 4.7 12.3 4.7 17 0l7.1-7.1c4.7-4.7 4.7-12.3 0-17l-211-211.1c-4.7-4.7-12.3-4.7-17 0L4.5 285.5c-4.7 4.7-4.7 12.3 0 17z" class=""></path></svg>
+  </div>
+  {% block footer_debug %}
+    {% if g.debug %}
+      {% include 'snippets/debug.html' %}
+    {% endif %}
+  {% endblock %}
+</footer>
