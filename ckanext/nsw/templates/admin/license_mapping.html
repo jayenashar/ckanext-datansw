@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %} {% block primary_content_inner %}
 <div>
   <h2>{{ _('Licenses mapping') }}</h2>
-  {% if undefined|length %} 
+  {% if undefined|length %}
     {% trans %}
       <p>Here is you can add custom labels for licenses from external sources.</p>
     {% endtrans %}
@@ -18,17 +18,17 @@
       </div>
       <input name="" type="submit" value="Add Label" class="btn btn-primary" />
     </form>
-    <hr/> 
+    <hr/>
   {% else %}
     <p class="muted">{{ _('It seems that there is no any external license in use') }}</p>
   {% endif %}
 </div>
-{% endblock %} 
+{% endblock %}
 
 {% block secondary_content %}
 <div class="module module-narrow module-shallow">
   <h2 class="module-heading">
-    <i class="icon-info-sign"></i>
+    <i class="fa fa-info-sign"></i>
     {{ _('License mapping') }}
   </h2>
   <div class="module-content">
