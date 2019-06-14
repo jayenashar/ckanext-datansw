@@ -15,7 +15,7 @@
             ) }}
               <li>
                 <a href="{{ h.url_for(controller='admin', action='index') }}" title="{{ _('Sysadmin settings') }}">
-                  <i class="fa fa-legal"> Sysadmin</i>
+                  <i class="fa fa-legal"></i>  Sysadmin
                 </a>
               </li>
             {% endif %}
@@ -29,21 +29,21 @@
             <li class="notifications {% if new_activities > 0 %}notifications-important{% endif %}">
               {% set notifications_tooltip = ngettext('Dashboard (%(num)d new item)', 'Dashboard (%(num)d new items)', new_activities) %}
               <a href="{{ h.url_for(controller='user', action='dashboard') }}" title="{{ notifications_tooltip }}">
-                <i class="fa fa-dashboard"> Dashboard</i>
+                <i class="fa fa-dashboard"></i> Dashboard
                 <span>{{ new_activities }}</span>
               </a>
             </li>
             {% block header_account_settings_link %}
               <li>
                 <a href="{{ h.url_for(controller='user', action='edit', id=c.userobj.name) }}" title="{{ _('Edit settings') }}">
-                  <i class="fa fa-cog"> Settings</i>
+                  <i class="fa fa-cog"></i> Settings
                 </a>
               </li>
             {% endblock %}
             {% block header_account_log_out_link %}
               <li>
                 <a href="{{ h.url_for('/user/_logout') }}" title="{{ _('Log out') }}">
-                  <i class="fa fa-sign-out"> Log out</i>
+                  <i class="fa fa-sign-out"></i> Log out
                 </a>
               </li>
             {% endblock %}
