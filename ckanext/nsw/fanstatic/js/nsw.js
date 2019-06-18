@@ -190,11 +190,11 @@ var data_count = $('.pagiantion-top').attr('data-count');
 var pages_count = Math.ceil(data_count / 20);
 if (pages_count > 10) {
   $('.pagination').append(
-    `<div class='pagination-go-to'>
-    Go to page
-    <input type='text'>
-    <button>Go</button>
-    </div>`
+    "<div class='pagination-go-to'>\
+    Go to page\
+    <input type='text'>\
+    <button>Go</button>\
+    </div>"
   );
 
   var params = searchToObject(window.location.search);

@@ -345,3 +345,58 @@ a.skip-link:focus {
     }
   }
 }
+
+#likes-section {
+  float: left;
+  .likes-inline {
+    border-radius: 3px;
+    border: 1px solid #023a78;
+  }
+  .like-button {
+    color: #023a78;
+  }
+  .unlike-button {
+    color: #023a78;
+  }
+  .likes-btn {
+    border: none;
+    background: transparent;
+    width: 30px;
+    text-align: center;
+    padding: 0 0 0 3px;
+    &:hover, &:focus {
+      outline: none;
+      outline-style:none;
+      box-shadow:none;
+      border-color:transparent;
+    }
+  }
+  #likes-count {
+    border-left: 1px solid #023a78;
+    padding: 2px 10px;
+    display: inline-block;
+    vertical-align: middle;
+    font-weight: bold;
+    text-align: center;
+    color: #023a78;
+    line-height: 19px;
+  }
+}
+
+.dataset-item {
+  overflow: hidden;
+  #likes-section {
+    float: none;
+    font-size: 12px;
+    margin-top: 4px;
+    .likes-btn {
+      i {
+        font-size: 12px;
+        line-height: 20px;
+      }
+    }
+    #likes-count {
+      line-height: 18px;
+    }
+  }
+}
