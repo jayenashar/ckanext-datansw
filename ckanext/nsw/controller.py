@@ -174,7 +174,7 @@ class NSWController(PackageController):
         defined_licenses = []
         undefined_licenses = set()
 
-        licenses_file = config.get('licenses_group_url', None)
+        licenses_file = config.get('licenses_group_url', '')
         licenses_file = licenses_file.replace('file://', '')
 
         if licenses_file:
