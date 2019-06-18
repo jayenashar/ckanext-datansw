@@ -59,6 +59,12 @@ class NSWCommand(CkanCommand):
             self._broken_links_report()
         elif self.args[0] == 'sso-user-reset-notification':
             self._sso_user_reset_notification()
+        elif self.args[0] == 'init':
+            self._init()
+        elif self.args[0] == 'drop':
+            self._drop()
+        elif self.args[0] == 'create':
+            self._create()
         else:
             print self.usage
 
@@ -221,6 +227,19 @@ class NSWCommand(CkanCommand):
             report.writerow([page, res.url.encode('utf-8'), code, reason])
             broken_count += 1
         file.close()
+
+    def _init(self):
+        self._drop()
+        self._create()
+        log.info("DB tables are reinitialized")
+
+    def _drop(self):
+        nsw_model.drop_tables()
+        log.info("DB tables are removed")
+
+    def _create(self):
+        nsw_model.create_tables()
+        log.info("DB tables are setup") 
 
     def _sso_user_reset_notification(self):
         import ckan.lib.mailer as mailer
