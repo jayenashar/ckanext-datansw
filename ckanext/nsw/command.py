@@ -15,6 +15,8 @@ import ckan.lib.helpers as h
 from ckan.common import config
 import requests.exceptions as exc
 
+import ckanext.nsw.model.model as nsw_model
+
 log = logging.getLogger(__name__)
 
 
