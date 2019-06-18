@@ -141,7 +141,6 @@ def related_create(context, data_dict=None):
 def nsw_user_list(context, data_dict):
     model = context['model']
     query = ckan_user_list(context, data_dict)
-    query = query.order_by(None).order_by(_desc(model.User.created))
     return query
 
 

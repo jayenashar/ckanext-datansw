@@ -51,18 +51,14 @@ class NSWCommand(CkanCommand):
             print self.usage
         elif self.args[0] == 'dropuser':
             self._drop_user(self.args[1])
-	elif self.args[0] == 'drop-oeh':
+        elif self.args[0] == 'drop-oeh':
             self._drop_oeh()
         elif self.args[0] == 'maintainer-report':
             self._maintainer_report()
         elif self.args[0] == 'broken-links-report':
             self._broken_links_report()
-        elif self.args[0] == 'init':
-            self._init()
-        elif self.args[0] == 'drop':
-            self._drop()
-        elif self.args[0] == 'create':
-            self._create()
+        elif self.args[0] == 'sso-user-reset-notification':
+            self._sso_user_reset_notification()
         else:
             print self.usage
 
@@ -101,23 +97,29 @@ class NSWCommand(CkanCommand):
         model.Session.commit()
         print('Done')
 
-
     def _drop_oeh(self):
         def _drop_datasets(q):
-            packages = toolkit.get_action('package_search')(None, {
-                'fq': q,
-                'rows': 100
-            })
+            packages = toolkit.get_action('package_search')(
+                None, {
+                    'fq': q,
+                    'rows': 100
+                }
+            )
             i = 0
             for i, dataset in enumerate(packages['results'], 1):
-                print('[{}/{}] Purge {}'.format(i + removed_count, total,
-                                                dataset['name']))
+                print(
+                    '[{}/{}] Purge {}'.format(
+                        i + removed_count, total, dataset['name']
+                    )
+                )
                 pkg = model.Package.get(dataset['id'])
                 try:
-                    model.Session.query(model.PackageExtraRevision).filter_by(
-                        package_id=dataset['id']).delete()
-                    model.Session.query(model.PackageExtra).filter_by(
-                        package_id=dataset['id']).delete()
+                    model.Session.query(
+                        model.PackageExtraRevision
+                    ).filter_by(package_id=dataset['id']).delete()
+                    model.Session.query(
+                        model.PackageExtra
+                    ).filter_by(package_id=dataset['id']).delete()
                     pkg.purge()
                     model.Session.commit()
                 except Exception as e:
@@ -132,10 +134,12 @@ class NSWCommand(CkanCommand):
         q = 'organization:office-of-environment-and-heritage-oeh'
         if id_:
             q += ' AND (id:{0} OR name:{0})'.format(id_)
-        packages = toolkit.get_action('package_search')(None, {
-            'fq': q,
-            'rows': 0
-        })
+        packages = toolkit.get_action('package_search')(
+            None, {
+                'fq': q,
+                'rows': 0
+            }
+        )
         total = packages['count']
         removed_count = 0
         print('Found {} datasets. Purging...'.format(total))
@@ -144,7 +148,8 @@ class NSWCommand(CkanCommand):
             if removed_count:
                 print(
                     'Already removed {} datasets. Fetching next portion'.
-                    format(removed_count))
+                    format(removed_count)
+                )
             removed_count += _drop_datasets(q)
             if removed_count >= total:
                 break
@@ -159,14 +164,25 @@ class NSWCommand(CkanCommand):
         for pkg in q:
             if pkg.extras.get('harvest_url'):
                 continue
-            writer.writerow([pkg.title.encode('utf8'), h.url_for('dataset_read', id=pkg.name, qualified=True), pkg.maintainer_email])
+            writer.writerow([
+                pkg.title.encode('utf8'),
+                h.url_for('dataset_read', id=pkg.name, qualified=True),
+                pkg.maintainer_email
+            ])
 
         print('Report: {}'.format(output.name))
 
     def _broken_links_report(self):
         broken_count = 0
-        resources = model.Session.query(model.Resource
-                                        ).filter_by(state='active')
+        resources = model.Session.query(model.Resource).join(
+            model.Package, model.Package.id == model.Resource.package_id
+        ).outerjoin(
+            model.PackageExtra,
+            (model.Package.id == model.PackageExtra.package_id) &
+            (model.PackageExtra.key == 'harvest_url')
+        ).filter(
+            model.Resource.state == 'active', model.PackageExtra.key.is_(None)
+        )
         total = resources.count()
         file = open(config['nsw.report.broken_links_filepath'], 'wb')
         report = csv.writer(file)
@@ -175,19 +191,16 @@ class NSWCommand(CkanCommand):
             print '\rProcessing {} of {}. Broken links: {}'.format(
                 i, total, broken_count
             ),
+
             sys.stdout.flush()
-            page = h.url_for(
-                controller='package',
-                action='resource_read',
-                id=res.package_id,
-                resource_id=res.id,
-                qualified=True
-            )
             try:
                 resp = requests.head(res.url, timeout=5)
                 if resp.ok:
                     continue
                 code, reason = resp.status_code, resp.reason
+                # it's likely incorrect request to service endpoint
+                if 400 == code:
+                    continue
             except (exc.ConnectTimeout, exc.ReadTimeout):
                 code, reason = 504, 'Request timeout'
             except exc.ConnectionError:
@@ -197,19 +210,63 @@ class NSWCommand(CkanCommand):
             except exc.InvalidURL:
                 code, reason = 520, 'Invalid URL'
 
-            report.writerow([page, res.url, code, reason])
+            page = h.url_for(
+                controller='package',
+                action='resource_read',
+                id=res.package_id,
+                resource_id=res.id,
+                qualified=True
+            )
+
+            report.writerow([page, res.url.encode('utf-8'), code, reason])
             broken_count += 1
         file.close()
 
-    def _init(self):
-        self._drop()
-        self._create()
-        log.info("DB tables are reinitialized")
+    def _sso_user_reset_notification(self):
+        import ckan.lib.mailer as mailer
+        from ckanext.saml2.model.saml2_user import SAML2User
+        import time
+        saml2_users = model.Session.query(SAML2User.id).all()
+        if len(self.args) > 1:
+            users = model.Session.query(model.User)\
+               .filter(model.User.name == self.args[1])\
+               .filter(model.User.id.in_(saml2_users)).limit(1).all()
+        else:
+            users = model.Session.query(model.User)\
+                .filter(model.User.id.in_(saml2_users))\
+                .all()
+        for user in users:
+            time.sleep(4)
+            if user:
+                print('*' * 100)
+                mailer.create_reset_key(user)
+                reset_link = mailer.get_reset_link(user)
+                extra_link = h.url_for('/user/reset', qualified=True)
+                subject = 'Data.NSW & IAR ID Hub decommissioning'
+                msg = ('Dear {0},\n\n'
 
-    def _drop(self):
-        nsw_model.drop_tables()
-        log.info("DB tables are removed")
+                'The Department of Finance, Services and Innovation has been making a range of improvements to Data NSW and as part of that roadmap, we are making changes to the login process.\n\n'
 
-    def _create(self):
-        nsw_model.create_tables()
-        log.info("DB tables are setup")
+                'In order to maintain your access to Data NSW and the Information Access Register, you will need to reset your password to login to Data NSW.\n\n'
+
+                'To reset your password, as soon as possible please visit: {1} \n\n'
+
+                'If the link above doesn\'t work, please visit {2} and reset your password manually using the following username: {3} \n\n'
+
+                'Once your password is reset, you will be able to use this new password and the login functionality on the Data NSW homepage to access your datasets. Please note, your Data NSW user name is used in the salutation of this message.\n\n'
+
+                'To continue to access Data NSW to administer your agency\'s datasets, please make these login changes by 6 February.\n\n'
+
+                'If you have any questions or concerns about these changes, please contact the Information and Data Policy team at the Department of Finance, Services and Innovation at datansw@finance.nsw.gov.au\n\n'
+
+                'Kind Regards,\n'
+                'The Data NSW team\n'
+                'Department Finance, Services and Innovation').format(user.name, reset_link, extra_link, user.name)
+                if user.email:
+                    mailer.mail_recipient(user.name, user.email, subject, msg)
+                    log.info("User pass reset email should be sent to {0} user.".format(user.name))
+                    print("User pass reset email should be sent to {0} user.".format(user.name))
+                else:
+                    log.error("User {0} don't have email".format(user.name))
+                    print("User {0} don't have email".format(user.name))
+                print('*' * 100)
