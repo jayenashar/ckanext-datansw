@@ -1070,10 +1070,10 @@ a.skip-link:focus {
   border: 1px solid #023a78;
 }
 #likes-section .like-button {
-  color: #023a78;
+  color: #000000;
 }
 #likes-section .unlike-button {
-  color: #023a78;
+  color: #000000;
 }
 #likes-section .likes-btn {
   border: none;
