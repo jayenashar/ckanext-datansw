@@ -6,174 +6,175 @@
 {% set search_class = search_class if search_class else 'search-giant' %}
 {% set no_bottom_border = no_bottom_border if no_bottom_border else false %}
 {% set sorting_tooltip = g.search_tooltip %}
-<form class="search-form{% if no_bottom_border %} no-bottom-border{% endif %}" method="get">
 
-	{% block search_input %}
-	<div class="search-input control-group {{ search_class }}">
-		<label for="search" style="position:absolute; left: -9999px;">{{ placeholder }}</label>
-		<input id="search" type="text" class="search form-text au-text-input au-text-input--block" name="q" value="{{ query }}" autocomplete="off" placeholder="{{ placeholder }}">
-		<button type="submit" value="search">
-			<i class="fa fa-search"></i>
-			<span>{{ _('Submit') }}</span>
-		</button>
-	</div>
-	{% endblock %}
+			<form class="search-form{% if no_bottom_border %} no-bottom-border{% endif %}" method="get">
 
-	{% block search_search_fields %}
-		{% if fields -%}
-			<span>{{ form.hidden_from_list(fields=fields) }}</span>
-		{%- endif %}
-	{% endblock %}
+				{% block search_input %}
+				<div class="search-input control-group {{ search_class }}">
+					<label for="search" style="position:absolute; left: -9999px;">{{ placeholder }}</label>
+					<input id="search" type="text" class="search form-text au-text-input au-text-input--block" name="q" value="{{ query }}" autocomplete="off" placeholder="{{ placeholder }}">
+					<button type="submit" value="search">
+						<i class="fa fa-search"></i>
+						<span>{{ _('Submit') }}</span>
+					</button>
+				</div>
+				{% endblock %}
 
-	<div class="row">
-		<div class="col-xs-12">
-			{% block search_title %}
-				{% if not no_title %}
-					<h2 class="pull-left">{% snippet 'snippets/search_result_text.html', query=query, count=count, type=type %}</h2>
-				{% endif %}
-			{% endblock %}
+				{% block search_search_fields %}
+					{% if fields %}
+						<span>{{ form.hidden_from_list(fields=fields) }}</span>
+					{% endif %}
+				{% endblock %}
 
-			<h2 id="show-advanced-fields" class="pull-right">{{ _('Advanced Search ') }}</h2>
-		</div>
-	</div>
-
-	{% block search_sortby %}
-		{% if sorting %}
-			<div id="advanced-search" class="form-select control-group" style="display: none">
 				<div class="row">
-					<div class="col-xs-6">
-						<label for="field-organisation">
-							{{ _('Organisation') }}
-						</label>
-						<select id="field-organisation" name="sort" class="au-select au-select--block">
-							{% for label, value in sorting %}
-								{% if label and value %}
-									<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
-					</div>
-					<div class="col-xs-6">
-						<label for="field-group">
-							{{ _('Group') }}
-						</label>
-						<select id="field-group" name="sort" class="au-select au-select--block">
-							{% for label, value in sorting %}
-								{% if label and value %}
-									<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
-					</div>
-					<div class="col-xs-6">
-					<label for="field-tag">
-						{{ _('Tag') }}
-					</label>
-						<select id="field-tag" name="sort" class="au-select au-select--block">
-							{% for label, value in sorting %}
-								{% if label and value %}
-									<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
-					</div>
-					<div class="col-xs-6">
-						<label for="field-type">
-							{{ _('Type') }}
-						</label>
-						<select id="field-type" name="sort" class="au-select au-select--block">
-							{% for label, value in sorting %}
-								{% if label and value %}
-									<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
-					</div>
-					<div class="col-xs-6">
-						<label for="field-format">
-							{{ _('Format') }}
-						</label>
-						<select id="field-format" name="sort" class="au-select au-select--block">
-							{% for label, value in sorting %}
-								{% if label and value %}
-									<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
-					</div>
-					<div class="col-xs-6">
-						<label for="field-license">
-							{{ _('License') }}
-						</label>
-						<select id="field-license" name="sort" class="au-select au-select--block">
-							{% for label, value in sorting %}
-								{% if label and value %}
-									<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-								{% endif %}
-							{% endfor %}
-						</select>
-					</div>
-				</div>
-				<button class="au-btn" type="submit">{{ _('Go') }}</button>
-			</div>
-			<div class="form-select control-group control-order-by">
-				<label for="field-order-by">
-					{% if sorting_tooltip %}
-						<i class="fa fa-info-circle" data-toggle="tooltip" data-html="true" data-placement="bottom" title="{{ h.render_markdown(sorting_tooltip) }}"></i>
-					{% endif %}
-					{{ _('Order by') }}
-				</label>
-				<select id="field-order-by" name="sort">
-					{% for label, value in sorting %}
-						{% if label and value %}
-							<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
-						{% endif %}
-					{% endfor %}
-				</select>
-				<button class="au-btn" type="submit">{{ _('Go') }}</button>
-			</div>
-			<div class="row">
-				<div class="col-xs-12">
-					<ul class="au-tags homepage-search-tags">
-						{% for label, value in sorting %}
-							{% if label and value %}
-								<li>
-									<a href="{{ value }}">{{ label }}</a>
-								</li>
+					<div class="col-xs-12">
+						{% block search_title %}
+							{% if not no_title %}
+								<h2 class="pull-left">{% snippet 'snippets/search_result_text.html', query=query, count=count, type=type %}</h2>
 							{% endif %}
-						{% endfor %}
-					</ul>
+						{% endblock %}
+
+						<h2 id="show-advanced-fields" class="pull-right">{{ _('Advanced Search ') }}</h2>
+					</div>
 				</div>
-			</div>
-		{% endif %}
-	{% endblock %}
 
-	{% block search_facets %}
-		{% if facets %}
-				<p class="filter-list">
-			{% for field in facets.fields %}
-					{% if field == "license_id" %}
-				{% set search_facets_items = h.external_license_label(facets.search.get(field)['items']) %}
-					{% else %}
-				{% set search_facets_items = facets.search.get(field)['items'] %}
+				{% block search_sortby %}
+					{% if sorting %}
+						<div id="advanced-search" class="form-select control-group" style="display: none">
+							<div class="row">
+								<div class="col-sm-6 col-xs-12">
+									<label for="field-organisation">
+										{{ _('Organisation') }}
+									</label>
+									<select id="field-organisation" name="sort" class="au-select au-select--block">
+										{% for label, value in sorting %}
+											{% if label and value %}
+												<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6 col-xs-12">
+									<label for="field-group">
+										{{ _('Group') }}
+									</label>
+									<select id="field-group" name="sort" class="au-select au-select--block">
+										{% for label, value in sorting %}
+											{% if label and value %}
+												<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6 col-xs-12">
+								<label for="field-tag">
+									{{ _('Tag') }}
+								</label>
+									<select id="field-tag" name="sort" class="au-select au-select--block">
+										{% for label, value in sorting %}
+											{% if label and value %}
+												<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6 col-xs-12">
+									<label for="field-type">
+										{{ _('Type') }}
+									</label>
+									<select id="field-type" name="sort" class="au-select au-select--block">
+										{% for label, value in sorting %}
+											{% if label and value %}
+												<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6 col-xs-12">
+									<label for="field-format">
+										{{ _('Format') }}
+									</label>
+									<select id="field-format" name="sort" class="au-select au-select--block">
+										{% for label, value in sorting %}
+											{% if label and value %}
+												<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+								<div class="col-sm-6 col-xs-12">
+									<label for="field-license">
+										{{ _('License') }}
+									</label>
+									<select id="field-license" name="sort" class="au-select au-select--block">
+										{% for label, value in sorting %}
+											{% if label and value %}
+												<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+											{% endif %}
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<button class="au-btn" type="submit">{{ _('Go') }}</button>
+						</div>
+						<div class="form-select control-group control-order-by">
+							<label for="field-order-by">
+								{% if sorting_tooltip %}
+									<i class="fa fa-info-circle" data-toggle="tooltip" data-html="true" data-placement="bottom" title="{{ h.render_markdown(sorting_tooltip) }}"></i>
+								{% endif %}
+								{{ _('Order by') }}
+							</label>
+							<select id="field-order-by" name="sort">
+								{% for label, value in sorting %}
+									{% if label and value %}
+										<option value="{{ value }}"{% if sorting_selected == value %} selected="selected"{% endif %}>{{ label }}</option>
+									{% endif %}
+								{% endfor %}
+							</select>
+							<button class="au-btn" type="submit">{{ _('Go') }}</button>
+						</div>
+						<div class="row hidden">
+							<div class="col-xs-12">
+								<ul class="au-tags homepage-search-tags">
+									{% for label, value in sorting %}
+										{% if label and value %}
+											<li>
+												<a href="{{ value }}">{{ label }}</a>
+											</li>
+										{% endif %}
+									{% endfor %}
+								</ul>
+							</div>
+						</div>
 					{% endif %}
-					<span class="facet">{{ facets.titles.get(field) }}:</span>
-					{% for value in facets.fields[field] %}
-				<span class="filtered pill">
-						{%- if facets.translated_fields and facets.translated_fields.has_key((field,value)) -%}
-					{{ facets.translated_fields[(field,value)] }}
-						{%- else -%}
-					{{ h.list_dict_filter(search_facets_items, 'name', 'display_name', value) }}
-						{%- endif %}
-						<a href="{{ facets.remove_field(field, value) }}" class="remove" title="{{ _('Remove') }}"><i class="fa fa-times"></i></a>
-				</span>
-					{% endfor %}
-			{% endfor %}
-				</p>
-		{% endif %}
-	{% endblock %}
+				{% endblock %}
 
-</form>
+				{% block search_facets %}
+					{% if facets %}
+							<p class="filter-list">
+						{% for field in facets.fields %}
+								{% if field == "license_id" %}
+							{% set search_facets_items = h.external_license_label(facets.search.get(field)['items']) %}
+								{% else %}
+							{% set search_facets_items = facets.search.get(field)['items'] %}
+								{% endif %}
+								<span class="facet">{{ facets.titles.get(field) }}:</span>
+								{% for value in facets.fields[field] %}
+							<span class="filtered pill">
+									{% if facets.translated_fields and facets.translated_fields.has_key((field,value)) %}
+								{{ facets.translated_fields[(field,value)] }}
+									{% else %}
+								{{ h.list_dict_filter(search_facets_items, 'name', 'display_name', value) }}
+									{% endif %}
+									<a href="{{ facets.remove_field(field, value) }}" class="remove" title="{{ _('Remove') }}"><i class="fa fa-times"></i></a>
+							</span>
+								{% endfor %}
+						{% endfor %}
+							</p>
+					{% endif %}
+				{% endblock %}
+
+			</form>
 
 {% if show_empty and count == 0 %}
     {% trans %}
