@@ -9,9 +9,9 @@
 	    {% block page_primary_action %}
 		<div class="page_primary_action" width="100%">
 		    {% if h.check_access('package_create') %}
-			<a class="btn btn-primary" href="{{ h.url_for(controller='package', action='new') }}"><i class="fa fa-plus-square"></i>{{ _('Add Dataset')}}</a>
+					<a class="btn btn-primary" href="{{ h.url_for(controller='package', action='new') }}"><i class="fa fa-plus-square"></i>{{ _('Add Dataset')}}</a>
 		    {% endif %}
-		    <a style="float:right" class="btn btn-primary" href="{{ h.url_for(controller='ckanext.nsw.controller:NSWController', action='summarycsv')}}"><i class="fa fa-arrow-circle-o-down"></i>Download Summary Table</a>
+		    	<a style="float:right" class="btn btn-primary" href="{{ h.url_for(controller='ckanext.nsw.controller:NSWController', action='summarycsv')}}"><i class="fa fa-arrow-circle-o-down"></i>Download Summary Table</a>
 		</div>
 	    {%  endblock %}
 	    {% block form %}
