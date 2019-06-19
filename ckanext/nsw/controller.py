@@ -25,7 +25,10 @@ def set_attachment(response, filename):
 
 
 def get_key(container, key, default=''):
-    return container.get(key) or default
+    try:
+        return container[key]
+    except (AttributeError, KeyError, TypeError):
+        return default
 
 
 class NSWController(PackageController):

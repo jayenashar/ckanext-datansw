@@ -22,7 +22,6 @@ html {
   transition: all 0.8s;
   text-decoration: none;
 }
-
 .tags .tag {
   color: #002664;
   border: 1px solid #002664;
@@ -35,7 +34,6 @@ html {
   margin-right: 0.625rem;
   margin-bottom: 0.3125rem;
 }
-
 /* Main */
 .nav-item.active > a:before {
   background-image: none;
@@ -926,7 +924,7 @@ a.skip-link:focus {
   background: transparent;
 }
 .search-form .search-input.search-giant button[type=submit] {
-  margin-top: 0;
+  height: auto;
 }
 .search-form .search-input.search-giant button[type=submit] i {
   color: #752f8a;
@@ -1126,4 +1124,7 @@ a.skip-link:focus {
 
 #advanced-search .au-select {
   color: #752f8a;
+}
+#advanced-search label:after {
+  content: none;
 }
