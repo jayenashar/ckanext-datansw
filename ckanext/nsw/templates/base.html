@@ -1,33 +1,36 @@
 {% ckan_extends %}
 {# Allows custom attributes to be added to the <html> tag #}
-{%- block htmltag -%}
+{% block htmltag %}
 {% set lang = 'en' %}
 <!--[if IE 7]> <html lang="{{ lang }}" class="ie ie7"> <![endif]-->
 <!--[if IE 8]> <html lang="{{ lang }}" class="ie ie8"> <![endif]-->
 <!--[if IE 9]> <html lang="{{ lang }}" class="ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html lang="{{ lang }}"> <!--<![endif]-->
-{%- endblock -%}
+{% endblock %}
 
-{% block links -%}
+{% block links %}
   {{ super() }}
-  <link rel="icon" href="https://www.nsw.gov.au/themes/nsw/images/favicons/favicon.ico" />
-{% endblock -%}
+  <link rel="icon" href="/data/images/favicon.ico" />
+{% endblock %}
 {% block styles %}
   {{ super() }}
+  <link rel="stylesheet" media="all" href="https://fonts.googleapis.com/css?family=Montserrat:300,400,600,700,900">
+  {% resource 'ckanext-nsw/styles/design-system.css' %}
   {% resource 'ckanext-nsw/styles/nsw.css' %}
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"  type="text/css">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.1/themes/smoothness/jquery-ui.css"  type="text/css">
 
-      <!--[if lt IE 9]>
-      <style>
-            .media-item {width: 92%;}
-            .organisation .media-item {width: 43%;text-align: center;min-height: 200px;}
-            .media-item .media-image {float: right;}
-            .organisation .media-item .media-image {float: none;}
-            </style>
-      <![endif]-->
+  <!--[if lt IE 9]>
+  <style>
+        .media-item {width: 92%;}
+        .organisation .media-item {width: 43%;text-align: center;min-height: 200px;}
+        .media-item .media-image {float: right;}
+        .organisation .media-item .media-image {float: none;}
+        </style>
+  <![endif]-->
 {% endblock %}
 {% block scripts %}
-{{ super() }}
-{% resource 'ckanext-nsw/scripts' %}
-    <!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-    {% endblock %}
+  {{ super() }}
+  {% resource 'ckanext-nsw/scripts' %}
+  <!--[if lt IE 9]><script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+  <script type="text/javascript" src="https://www.onegov.nsw.gov.au/CDN/feedbackassist/feedbackassist.v1.min.js"></script>
+{% endblock %}
