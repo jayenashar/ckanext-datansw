@@ -738,9 +738,12 @@ li.active h3.nav-styled {
 .context-info .image {
   height: 200px;
 }
-.context-info .image img, .context-info .image a {
+.context-info .image img {
+  max-height: 200px;
+  max-width: 100%;
+  height: auto;
   width: auto;
-  margin: 0 auto;
+  margin: 15px auto;
 }
 .context-info .info .dl .dd {
   margin-top: 3px;
